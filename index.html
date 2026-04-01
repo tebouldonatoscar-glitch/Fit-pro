@@ -150,6 +150,10 @@ const DB={
   saveProfile(v){this.s('profile',v)},
   customExercises(){return this.g('customex')||[]},
   saveCustomExercises(v){this.s('customex',v)},
+  hiddenExercises(){return this.g('hiddenex')||[]},
+  saveHiddenExercises(v){this.s('hiddenex',v)},
+  emojiOverrides(){return this.g('emojioverrides')||{}},
+  saveEmojiOverrides(v){this.s('emojioverrides',v)},
   imported(){return this.g('imp')||false},
   setImp(){this.s('imp',true)},
 };
@@ -219,8 +223,8 @@ const EX=[
   {id:'plank',name:'Planche',muscle:'Abdominaux',eq:'Poids du corps',e:'📏'},
   {id:'leg_raise',name:'Relevé de jambes',muscle:'Abdominaux',eq:'Poids du corps',e:'🦵'},
 ];
-const allEx=()=>[...EX,...DB.customExercises()];
-const gEx=id=>allEx().find(e=>e.id===id)||{id,name:id,muscle:'Autre',e:'💪',eq:'—'};
+const allEx=()=>{const hidden=DB.hiddenExercises();const ov=DB.emojiOverrides();return[...EX,...DB.customExercises()].filter(ex=>!hidden.includes(ex.id)).map(ex=>ov[ex.id]?{...ex,e:ov[ex.id]}:ex);};
+const gEx=id=>{const ov=DB.emojiOverrides();const found=[...EX,...DB.customExercises()].find(e=>e.id===id)||{id,name:id,muscle:'Autre',e:'💪',eq:'—'};return ov[found.id]?{...found,e:ov[found.id]}:found;};
 
 // ══════════════════════════════════════════
 // PRESETS
@@ -238,7 +242,9 @@ const gP=()=>DB.presets()||JSON.parse(JSON.stringify(DP));
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
-let pg='home',wo=null,woI=null,rI=null,rEndTime=0,rTotal=0,svs={e:3,s:3};
+let pg='home',wo=null,woI=null,rI=null,rEndTime=0,rTotal=0,svs={e:3,s:3},timerWorker=null;
+function initTimerWorker(){if(typeof Worker==='undefined')return;timerWorker=new Worker('timer-worker.js');timerWorker.onmessage=e=>{if(e.data.type==='tick'){const rem=e.data.rem;const el=document.getElementById('rs');if(el)el.textContent=fT(rem);const pr=document.getElementById('rpr');if(pr)pr.style.strokeDashoffset=478*(1-rem/rTotal);if(rem<=0)skipR();}else if(e.data.type==='done')skipR();};}
+initTimerWorker();
 
 // ══════════════════════════════════════════
 // HELPERS
@@ -251,7 +257,7 @@ function toast(m,dur=2500){const t=document.getElementById('toast');t.textConten
 function gLS(id,n=3){return DB.sessions().filter(s=>s.exs.some(e=>e.id===id)).slice(0,n).map(s=>({date:s.date,sets:s.exs.find(e=>e.id===id).sets}));}
 function sugKg(id){const h=gLS(id,1);if(!h.length)return null;const d=h[0].sets.filter(s=>s.done);if(!d.length)return null;const mx=Math.max(...d.map(s=>parseFloat(s.kg)||0));return d.every(s=>s.done)?mx+2.5:mx;}
 function best1RM(id){return DB.sessions().flatMap(s=>s.exs.filter(e=>e.id===id).flatMap(e=>e.sets.filter(s=>s.done).map(s=>c1RM(parseFloat(s.kg)||0,parseInt(s.reps)||0)))).reduce((m,v)=>Math.max(m,v),0)||0;}
-function mDays(){const r={},n=Date.now();DB.sessions().forEach(s=>{s.exs.forEach(ex=>{const m=gEx(ex.id).muscle;const d=Math.floor((n-s.date)/86400000);if(!(m in r)||r[m]>d)r[m]=d;});});return r;}
+function mDays(){const r={},n=Date.now();DB.sessions().forEach(s=>{s.exs.forEach(ex=>{gEx(ex.id).muscle.split(' · ').forEach(m=>{const d=Math.floor((n-s.date)/86400000);if(!(m in r)||r[m]>d)r[m]=d;});});});return r;}
 function rc(d){return d===undefined||d>4?'green':d>=2?'orange':'red';}
 function wkSess(){return DB.sessions().filter(s=>Date.now()-s.date<7*86400000);}
 function streak(){const ss=DB.sessions();if(!ss.length)return 0;const days=[...new Set(ss.map(s=>Math.floor(s.date/86400000)))].sort((a,b)=>b-a);const t=Math.floor(Date.now()/86400000);let st=0,c=t;for(const d of days){if(d===c||d===c-1){st++;c=d;}else break;}return st;}
@@ -715,8 +721,8 @@ function showSum(s){openM(`<div class="mt">🎉 Séance terminée !</div><div st
 // ══════════════════════════════════════════
 // REST TIMER
 // ══════════════════════════════════════════
-function startR(total){rTotal=total;rEndTime=Date.now()+total*1000;document.getElementById('ro').classList.add('open');const circ=478;const pr=document.getElementById('rpr');const upd=()=>{const rem=Math.max(0,Math.ceil((rEndTime-Date.now())/1000));document.getElementById('rs').textContent=fT(rem);if(pr)pr.style.strokeDashoffset=circ*(1-rem/rTotal);if(rem<=0)skipR();};upd();if(rI)clearInterval(rI);rI=setInterval(upd,500);}
-function skipR(){clearInterval(rI);rEndTime=0;document.getElementById('ro').classList.remove('open');if(document.hidden&&'Notification'in window&&Notification.permission==='granted')new Notification('FitPro ⏱',{body:'Repos terminé — c\'est reparti !',icon:'icon-192.png'});}
+function startR(total){rTotal=total;rEndTime=Date.now()+total*1000;document.getElementById('ro').classList.add('open');if(timerWorker){timerWorker.postMessage({type:'start',endTime:rEndTime});}else{if(rI)clearInterval(rI);rI=setInterval(()=>{const rem=Math.max(0,Math.ceil((rEndTime-Date.now())/1000));const el=document.getElementById('rs');if(el)el.textContent=fT(rem);const pr=document.getElementById('rpr');if(pr)pr.style.strokeDashoffset=478*(1-rem/rTotal);if(rem<=0)skipR();},500);}}
+function skipR(){if(timerWorker)timerWorker.postMessage({type:'stop'});else clearInterval(rI);rEndTime=0;document.getElementById('ro').classList.remove('open');if(document.hidden&&'Notification'in window&&Notification.permission==='granted')new Notification('FitPro ⏱',{body:'Repos terminé — c\'est reparti !',icon:'icon-192.png'});}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&rEndTime>0){const rem=Math.ceil((rEndTime-Date.now())/1000);if(rem<=0){skipR();toast('⏱ Repos terminé !');}}});
 
 // ══════════════════════════════════════════
@@ -895,7 +901,7 @@ function saveEditS(id){
 let pChart=null;
 function rStats(sc){
   const ss=DB.sessions();
-  const mc={};ss.forEach(s=>s.exs.forEach(ex=>{const m=gEx(ex.id).muscle;mc[m]=(mc[m]||0)+1;}));
+  const mc={};ss.forEach(s=>s.exs.forEach(ex=>{gEx(ex.id).muscle.split(' · ').forEach(m=>{mc[m]=(mc[m]||0)+1;});}));
   const wv=[];for(let i=7;i>=0;i--){const st=Date.now()-(i+1)*7*86400000,en=Date.now()-i*7*86400000;const v=ss.filter(s=>s.date>=st&&s.date<en).reduce((t,s)=>t+(s.volume||0),0);wv.push({l:i===0?'Cette sem':i===1?'Sem-1':'S-'+i,v});}
   const ev={};ss.forEach(s=>s.exs.forEach(ex=>{const v=ex.sets.filter(s=>s.done).reduce((t,s)=>t+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0);ev[ex.id]=(ev[ex.id]||0)+v;}));
   const topEx=Object.entries(ev).sort((a,b)=>b[1]-a[1]).slice(0,6);
@@ -968,7 +974,7 @@ function rStats(sc){
       const radarMuscles=['Pectoraux','Dos','Épaules','Biceps','Triceps','Quadriceps','Ischio-jambiers','Fessiers','Abdominaux'];
       const now=Date.now();
       const monthSess=ss.filter(s=>now-s.date<30*86400000);
-      const mcMonth={};monthSess.forEach(s=>s.exs.forEach(ex=>{const m=gEx(ex.id).muscle;mcMonth[m]=(mcMonth[m]||0)+1;}));
+      const mcMonth={};monthSess.forEach(s=>s.exs.forEach(ex=>{gEx(ex.id).muscle.split(' · ').forEach(m=>{mcMonth[m]=(mcMonth[m]||0)+1;});}));
       const globalMax=Math.max(...radarMuscles.map(m=>mc[m]||0),1);
       const monthMax=Math.max(...radarMuscles.map(m=>mcMonth[m]||0),1);
       const globalData=radarMuscles.map(m=>Math.round(((mc[m]||0)/globalMax)*100));
@@ -1104,28 +1110,71 @@ function delG(i){const g=DB.goals();g.splice(i,1);DB.saveGoals(g);render();toast
 function expD(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({sessions:DB.sessions(),goals:DB.goals(),body:DB.body(),profile:DB.profile()},null,2)],{type:'application/json'}));a.download='fitpro_export.json';a.click();localStorage.setItem('fp4_lastExport',Date.now());}
 function checkExportReminder(){const last=parseInt(localStorage.getItem('fp4_lastExport')||'0');const days=Math.floor((Date.now()-last)/86400000);if(days>=30&&DB.sessions().length>0){setTimeout(()=>{openM(`<div class="mt">💾 Sauvegarde recommandée</div><p style="color:var(--t2);margin-bottom:14px;font-size:13px">Tu n'as pas exporté tes données depuis <strong>${last===0?'plus de 30 jours':days+' jours'}</strong>.<br><br>Si tu perds ton téléphone ou vides le cache, tout disparaît. Prends 2 secondes pour sauvegarder.</p><button class="btn bp bfull" style="margin-bottom:8px" onclick="expD();closeM();toast('Sauvegarde effectuée !')">📤 Exporter maintenant</button><button class="btn bg bfull" onclick="closeM()">Plus tard</button>`);},1500);}}
 const MUSCLES_LIST=['Dos','Pectoraux','Épaules','Biceps','Triceps','Quadriceps','Ischio-jambiers','Fessiers','Mollets','Abdominaux','Autre'];
-function openCreateEx(){
-  const customs=DB.customExercises();
-  openM(`<div class="mt">✚ Créer un exercice</div>
-    <div style="margin-bottom:9px"><label class="lbl">Nom</label><input class="inp" id="ex-name" placeholder="Ex: Pistol Squat, EZ Bar Curl…"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:9px">
-      <div><label class="lbl">Emoji</label><input class="inp" id="ex-emoji" placeholder="💪" maxlength="2" style="font-size:22px;text-align:center"></div>
-      <div><label class="lbl">Groupe musculaire</label><select class="inp" id="ex-muscle">${MUSCLES_LIST.map(m=>`<option>${m}</option>`).join('')}</select></div>
-    </div>
-    <button class="btn bp bfull" style="margin-bottom:12px" onclick="saveCustomEx()">Créer →</button>
-    ${customs.length?`<div class="div"></div><div class="slbl" style="margin-top:10px">Mes exercices (${customs.length})</div>
-    ${customs.map((e,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bg2)">
-      <span style="font-size:20px">${e.e}</span>
-      <div style="flex:1"><div style="font-size:13px;font-weight:600">${e.name}</div><div style="font-size:10px;color:var(--t3)">${e.muscle}</div></div>
-      <button onclick="delCustomEx(${i})" style="border:none;background:transparent;color:var(--t3);font-size:16px;cursor:pointer">✕</button>
-    </div>`).join('')}`:''}
-  `);
+function openCreateEx(tab='create'){
+  openM(`<div class="mt">⚙️ Exercices</div><div style="display:flex;gap:6px;margin-bottom:12px">
+  <button class="btn ${tab==='create'?'bp':'bg'}" style="flex:1;font-size:12px;padding:8px" onclick="openCreateEx('create')">✚ Créer</button>
+  <button class="btn ${tab==='manage'?'bp':'bg'}" style="flex:1;font-size:12px;padding:8px" onclick="openCreateEx('manage')">⚙️ Gérer</button>
+</div>
+${tab==='create'?`<div style="margin-bottom:9px"><label class="lbl">Nom</label><input class="inp" id="ex-name" placeholder="Ex: Pistol Squat, EZ Bar Curl…"></div>
+<div style="margin-bottom:9px"><label class="lbl">Emoji</label><input class="inp" id="ex-emoji" placeholder="💪" maxlength="2" style="font-size:22px;text-align:center;width:64px"></div>
+<div style="margin-bottom:9px"><label class="lbl">Groupes musculaires (plusieurs possibles)</label>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;border:1.5px solid var(--bd);border-radius:var(--rs);padding:8px;max-height:150px;overflow-y:auto">
+    ${MUSCLES_LIST.filter(m=>m!=='Autre').map(m=>`<label style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:4px 2px"><input type="checkbox" class="ex-muscle-cb" value="${m}" style="accent-color:var(--a);width:14px;height:14px"><span style="font-size:12px">${m}</span></label>`).join('')}
+  </div>
+</div>
+<button class="btn bp bfull" onclick="saveCustomEx()">Créer →</button>`:`<input class="inp" id="ex-search" placeholder="🔍 Rechercher…" oninput="filterManageEx(this.value)" style="margin-bottom:8px">
+<div style="font-size:11px;color:var(--t3);margin-bottom:6px">Appuie sur l'emoji pour le changer · 🙈 masque · ✕ supprime</div>
+<div id="ex-manage-list" style="max-height:360px;overflow-y:auto">${manageExHTML('')}</div>`}
+`);
+}
+function manageExHTML(q){
+  const hidden=DB.hiddenExercises();const ov=DB.emojiOverrides();const customs=DB.customExercises();const customIds=new Set(customs.map(e=>e.id));
+  const all=[...EX,...customs];
+  const filtered=q?all.filter(e=>e.name.toLowerCase().includes(q.toLowerCase())):all;
+  if(!filtered.length)return`<div style="text-align:center;color:var(--t3);padding:20px;font-size:13px">Aucun résultat</div>`;
+  return filtered.map(ex=>{const isH=hidden.includes(ex.id);const emoji=ov[ex.id]||ex.e;const isCust=customIds.has(ex.id);
+    return`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bg2);opacity:${isH?'0.4':'1'}">
+      <span style="font-size:20px;cursor:pointer" onclick="changeExEmoji('${ex.id}')">${emoji}</span>
+      <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ex.name}</div><div style="font-size:10px;color:var(--t3)">${ex.muscle}</div></div>
+      <button onclick="toggleHideEx('${ex.id}')" style="border:none;background:transparent;font-size:16px;cursor:pointer;color:var(--t3)">${isH?'👁️':'🙈'}</button>
+      ${isCust?`<button onclick="delCustomExById('${ex.id}')" style="border:none;background:transparent;font-size:15px;cursor:pointer;color:var(--t3)">✕</button>`:''}
+    </div>`;
+  }).join('');
+}
+function filterManageEx(q){const el=document.getElementById('ex-manage-list');if(el)el.innerHTML=manageExHTML(q);}
+function changeExEmoji(id){
+  const ex=gEx(id);
+  openM(`<div class="mt">Changer l'emoji</div>
+<div style="text-align:center;font-size:56px;margin:12px 0">${ex.e}</div>
+<div style="margin-bottom:12px"><label class="lbl">Nouvel emoji pour « ${ex.name} »</label>
+<input class="inp" id="new-emoji" placeholder="💪" maxlength="2" style="font-size:28px;text-align:center"></div>
+<button class="btn bp bfull" style="margin-bottom:8px" onclick="saveExEmoji('${id}')">Confirmer</button>
+<button class="btn bg bfull" onclick="openCreateEx('manage')">Annuler</button>`);
+}
+function saveExEmoji(id){
+  const val=document.getElementById('new-emoji')?.value?.trim();
+  if(!val){toast('Entre un emoji');return;}
+  const ov=DB.emojiOverrides();ov[id]=val;DB.saveEmojiOverrides(ov);
+  openCreateEx('manage');toast('Emoji mis à jour !');
+}
+function toggleHideEx(id){
+  const hidden=DB.hiddenExercises();const idx=hidden.indexOf(id);
+  if(idx>=0)hidden.splice(idx,1);else hidden.push(id);
+  DB.saveHiddenExercises(hidden);
+  const q=document.getElementById('ex-search')?.value||'';openCreateEx('manage');
+  setTimeout(()=>{const s=document.getElementById('ex-search');if(s&&q){s.value=q;filterManageEx(q);}},10);
+}
+function delCustomExById(id){
+  DB.saveCustomExercises(DB.customExercises().filter(e=>e.id!==id));
+  openCreateEx('manage');toast('Supprimé');
 }
 function saveCustomEx(){
   const name=document.getElementById('ex-name')?.value?.trim();
   const emoji=document.getElementById('ex-emoji')?.value?.trim()||'💪';
-  const muscle=document.getElementById('ex-muscle')?.value||'Autre';
+  const muscles=[...document.querySelectorAll('.ex-muscle-cb:checked')].map(cb=>cb.value);
+  const muscle=muscles.length?muscles.join(' · '):'Autre';
   if(!name){toast('Donne un nom à l\'exercice');return;}
+  if(!muscles.length){toast('Sélectionne au moins un groupe musculaire');return;}
   const id='custom_'+name.toLowerCase().replace(/[^a-z0-9]/g,'_').substring(0,30)+'_'+Date.now();
   const customs=DB.customExercises();
   customs.push({id,name,muscle,eq:'Libre',e:emoji});
@@ -1135,7 +1184,7 @@ function saveCustomEx(){
 function delCustomEx(i){
   const customs=DB.customExercises();customs.splice(i,1);DB.saveCustomExercises(customs);openCreateEx();}
 function confReset(){openM(`<div class="mt">⚠️ Réinitialiser ?</div><p style="color:var(--t2);margin-bottom:14px;font-size:12px">Toutes tes données seront supprimées.</p><button class="btn bd_ bfull" style="margin-bottom:5px" onclick="doReset()">Oui, tout supprimer</button><button class="btn bg bfull" onclick="closeM()">Annuler</button>`);}
-function doReset(){['sessions','goals','presets','settings','imp','body','profile','customex'].forEach(k=>localStorage.removeItem('fp4_'+k));closeM();toast('Réinitialisé');render();}
+function doReset(){['sessions','goals','presets','settings','imp','body','profile','customex','hiddenex','emojioverrides'].forEach(k=>localStorage.removeItem('fp4_'+k));closeM();toast('Réinitialisé');render();}
 
 // ══════════════════════════════════════════
 // MODAL
@@ -1150,7 +1199,12 @@ function closeMO(e){if(e.target===document.getElementById('mo'))closeM();}
 initImport();
 render();
 checkExportReminder();
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+  navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data?.type === 'sw-update' && !wo) window.location.reload();
+  });
+}
 </script>
 </body>
 </html>
