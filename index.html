@@ -136,8 +136,17 @@ const ISESS=[{"id":1000000,"date":1759312800000,"presetKey":"upper","type":"Uppe
 const DB={
   g(k){try{return JSON.parse(localStorage.getItem('fp4_'+k))}catch{return null}},
   s(k,v){localStorage.setItem('fp4_'+k,JSON.stringify(v))},
-  sessions(){return this.g('sessions')||[]},
-  saveSessions(v){this.s('sessions',v)},
+  sessions(){
+    const s=this.g('sessions')||[];
+    // Auto-restore from backup if primary key is empty but backup exists (fp4bak_ prefix survives doReset)
+    if(!s.length){try{const raw=localStorage.getItem('fp4bak_sessions');const bak=raw?JSON.parse(raw):null;if(bak&&bak.length){this.s('sessions',bak);return bak;}}catch{}}
+    return s;
+  },
+  saveSessions(v){
+    this.s('sessions',v);
+    // Mirror to backup key (fp4bak_ prefix is NOT touched by doReset)
+    if(v&&v.length>0)try{localStorage.setItem('fp4bak_sessions',JSON.stringify(v));}catch{}
+  },
   goals(){return this.g('goals')||[]},
   saveGoals(v){this.s('goals',v)},
   presets(){return this.g('presets')||null},
@@ -296,10 +305,12 @@ function latestWeight(){const b=DB.body();if(!b.entries.length)return null;retur
 // IMPORT SESSIONS AT FIRST LAUNCH
 // ══════════════════════════════════════════
 function initImport(){
+  const existing=DB.sessions();
+  // If real sessions exist, never overwrite them (protects against lost fp4_imp flag)
+  if(existing.length>0){DB.setImp();return;}
   if(DB.imported())return;
-  const merged=[...ISESS].sort((a,b)=>b.date-a.date);
-  DB.saveSessions(merged);DB.setImp();
-  console.log('Imported',ISESS.length,'sessions');
+  DB.saveSessions([...ISESS].sort((a,b)=>b.date-a.date));
+  DB.setImp();
 }
 
 // ══════════════════════════════════════════
