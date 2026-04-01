@@ -8,7 +8,7 @@ const ASSETS = [
 
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(cache => cache.addAll(['/index.html']))
+    caches.open(CACHE).then(cache => cache.addAll(['index.html']))
   );
   self.skipWaiting();
 });
@@ -32,7 +32,7 @@ self.addEventListener('fetch', e => {
           caches.open(CACHE).then(c => c.put(e.request, clone));
         }
         return res;
-      }).catch(() => caches.match('/index.html'));
+      }).catch(() => caches.match('index.html'));
     })
   );
 });
