@@ -297,10 +297,37 @@ function finS(s){let v=0,st=0;s.exs.forEach(ex=>ex.sets.forEach(set=>{if(set.don
 
 function openImport(){
   openM(`<div class="mt">📥 Importer des séances</div>
-    <p style="font-size:12px;color:var(--t2);margin-bottom:10px">Format : <code style="background:var(--bg2);padding:2px 5px;border-radius:4px;font-size:11px">Séance 1 upper: 01/10/2025</code> puis <code style="background:var(--bg2);padding:2px 5px;border-radius:4px;font-size:11px">∙ Exercice 20kg 3x10</code></p>
-    <label class="lbl">Colle tes séances</label>
-    <textarea class="inp" id="itxt" rows="9" style="resize:vertical;font-size:11px;font-family:monospace" placeholder="Séance 1 upper: 01/10/2025&#10;∙ Tractions lestées 10kg 3x6&#10;∙ Pec fly 60kg 3x9&#10;&#10;Séance 2 lower: 03/10/2025&#10;..."></textarea>
-    <button class="btn bp bfull" style="margin-top:10px" onclick="doImport()">Importer →</button>`);
+    <div style="margin-bottom:14px">
+      <label class="lbl">Depuis un fichier JSON (export FitPro)</label>
+      <label style="display:flex;align-items:center;justify-content:center;gap:7px;padding:13px;background:var(--bg2);border:1.5px dashed var(--bd2);border-radius:var(--rs);cursor:pointer;font-size:13px;font-weight:600;color:var(--t2)">
+        📂 Choisir un fichier .json
+        <input type="file" accept=".json" id="ifile" style="display:none" onchange="doImportJSON(this)">
+      </label>
+    </div>
+    <div class="div" style="margin:12px 0"></div>
+    <p style="font-size:11px;color:var(--t3);margin-bottom:8px">Ou colle du texte · Format : <code style="background:var(--bg2);padding:2px 5px;border-radius:4px">Séance 1 upper: 01/10/2025</code> puis <code style="background:var(--bg2);padding:2px 5px;border-radius:4px">∙ Exercice 20kg 3x10</code></p>
+    <textarea class="inp" id="itxt" rows="7" style="resize:vertical;font-size:11px;font-family:monospace" placeholder="Séance 1 upper: 01/10/2025&#10;∙ Tractions lestées 10kg 3x6&#10;∙ Pec fly 60kg 3x9&#10;&#10;Séance 2 lower: 03/10/2025&#10;..."></textarea>
+    <button class="btn bp bfull" style="margin-top:10px" onclick="doImport()">Importer texte →</button>`);
+}
+function doImportJSON(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      let count=0;
+      if(Array.isArray(data.sessions)&&data.sessions.length){
+        const merged=[...data.sessions,...DB.sessions()].filter((s,i,arr)=>arr.findIndex(x=>x.id===s.id)===i).sort((a,b)=>b.date-a.date);
+        DB.saveSessions(merged);count=data.sessions.length;
+      }
+      if(Array.isArray(data.goals)&&data.goals.length)DB.saveGoals(data.goals);
+      if(data.body)DB.saveBody(data.body);
+      if(data.profile?.name)DB.saveProfile(data.profile);
+      localStorage.setItem('fp4_lastExport',Date.now());
+      closeM();toast(count+' séance(s) + données restaurées !');render();
+    }catch{toast('Fichier JSON invalide');}
+  };
+  reader.readAsText(file);
 }
 function doImport(){const txt=document.getElementById('itxt')?.value||'';if(!txt.trim()){toast('Colle du texte d\'abord');return;}const p=parseText(txt);if(!p.length){toast('Format non reconnu. Vérifie le texte.');return;}const merged=[...p,...DB.sessions()].sort((a,b)=>b.date-a.date);DB.saveSessions(merged);closeM();toast(p.length+' séance(s) importée(s) !');render();}
 
@@ -821,7 +848,7 @@ function rStats(sc){
   const topEx=Object.entries(ev).sort((a,b)=>b[1]-a[1]).slice(0,6);
   const tIds=[...new Set(ss.flatMap(s=>s.exs.map(e=>e.id)))];
   // Monthly sessions
-  const monthly=[];for(let i=5;i>=0;i--){const d=new Date();d.setMonth(d.getMonth()-i);const m=d.getMonth(),y=d.getFullYear();const cnt=ss.filter(s=>{const sd=new Date(s.date);return sd.getMonth()===m&&sd.getFullYear()===y;}).length;monthly.push({l:d.toLocaleDateString('fr-FR',{month:'short'}),cnt});}
+  const monthly=[];for(let i=11;i>=0;i--){const d=new Date();d.setMonth(d.getMonth()-i);const m=d.getMonth(),y=d.getFullYear();const cnt=ss.filter(s=>{const sd=new Date(s.date);return sd.getMonth()===m&&sd.getFullYear()===y;}).length;monthly.push({l:d.toLocaleDateString('fr-FR',{month:'short',year:i>0&&d.getMonth()===0?'2-digit':undefined}),cnt});}
 
   sc.innerHTML=`<div style="padding:18px 15px" class="fade">
     <div class="ptitle" style="margin-bottom:14px">Statistiques</div>
@@ -1021,7 +1048,8 @@ function delG(i){const g=DB.goals();g.splice(i,1);DB.saveGoals(g);render();toast
 // ══════════════════════════════════════════
 // UTILS
 // ══════════════════════════════════════════
-function expD(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({sessions:DB.sessions(),goals:DB.goals(),body:DB.body(),profile:DB.profile()},null,2)],{type:'application/json'}));a.download='fitpro_export.json';a.click();}
+function expD(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({sessions:DB.sessions(),goals:DB.goals(),body:DB.body(),profile:DB.profile()},null,2)],{type:'application/json'}));a.download='fitpro_export.json';a.click();localStorage.setItem('fp4_lastExport',Date.now());}
+function checkExportReminder(){const last=parseInt(localStorage.getItem('fp4_lastExport')||'0');const days=Math.floor((Date.now()-last)/86400000);if(days>=30&&DB.sessions().length>0){setTimeout(()=>{openM(`<div class="mt">💾 Sauvegarde recommandée</div><p style="color:var(--t2);margin-bottom:14px;font-size:13px">Tu n'as pas exporté tes données depuis <strong>${last===0?'plus de 30 jours':days+' jours'}</strong>.<br><br>Si tu perds ton téléphone ou vides le cache, tout disparaît. Prends 2 secondes pour sauvegarder.</p><button class="btn bp bfull" style="margin-bottom:8px" onclick="expD();closeM();toast('Sauvegarde effectuée !')">📤 Exporter maintenant</button><button class="btn bg bfull" onclick="closeM()">Plus tard</button>`);},1500);}}
 function confReset(){openM(`<div class="mt">⚠️ Réinitialiser ?</div><p style="color:var(--t2);margin-bottom:14px;font-size:12px">Toutes tes données seront supprimées.</p><button class="btn bd_ bfull" style="margin-bottom:5px" onclick="doReset()">Oui, tout supprimer</button><button class="btn bg bfull" onclick="closeM()">Annuler</button>`);}
 function doReset(){['sessions','goals','presets','settings','imp','body','profile'].forEach(k=>localStorage.removeItem('fp4_'+k));closeM();toast('Réinitialisé');render();}
 
@@ -1037,6 +1065,7 @@ function closeMO(e){if(e.target===document.getElementById('mo'))closeM();}
 // ══════════════════════════════════════════
 initImport();
 render();
+checkExportReminder();
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
 </script>
 </body>
