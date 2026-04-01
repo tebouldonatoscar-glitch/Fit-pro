@@ -148,6 +148,8 @@ const DB={
   saveBody(v){this.s('body',v)},
   profile(){return this.g('profile')||{name:'',age:0,goal:''}},
   saveProfile(v){this.s('profile',v)},
+  customExercises(){return this.g('customex')||[]},
+  saveCustomExercises(v){this.s('customex',v)},
   imported(){return this.g('imp')||false},
   setImp(){this.s('imp',true)},
 };
@@ -213,7 +215,8 @@ const EX=[
   {id:'plank',name:'Planche',muscle:'Abdominaux',eq:'Poids du corps',e:'📏'},
   {id:'leg_raise',name:'Relevé de jambes',muscle:'Abdominaux',eq:'Poids du corps',e:'🦵'},
 ];
-const gEx=id=>EX.find(e=>e.id===id)||{id,name:id,muscle:'Autre',e:'💪',eq:'—'};
+const allEx=()=>[...EX,...DB.customExercises()];
+const gEx=id=>allEx().find(e=>e.id===id)||{id,name:id,muscle:'Autre',e:'💪',eq:'—'};
 
 // ══════════════════════════════════════════
 // PRESETS
@@ -598,6 +601,7 @@ function rSeances(sc){
       <button class="btn bp bfull" onclick="startCF()">+ Séance libre</button>
       <button class="btn bg bfull" onclick="openImport()">📥 Importer</button>
     </div>
+    <button class="btn bg bfull" style="margin-bottom:14px" onclick="openCreateEx()">✚ Créer un exercice</button>
     <div class="slbl">Séances types</div>
     ${Object.entries(ps).map(([k,p])=>{const ms=p.muscles.split('·').map(m=>m.trim());const ds=ms.map(m=>md[m]).filter(d=>d!==undefined);const mx=ds.length?Math.max(...ds):99;const c=rc(mx);
     return`<div class="card" style="margin-bottom:8px;border-left:4px solid ${p.color}">
@@ -644,13 +648,13 @@ function startCF(){openM(`<div class="mt">Séance libre</div>
   <div style="margin-bottom:11px"><label class="lbl">Nom</label><input class="inp" id="cn" placeholder="Ma séance…"></div>
   <div class="slbl" style="margin-bottom:6px">Exercices</div>
   <div style="max-height:270px;overflow-y:auto;margin-bottom:12px">
-    ${EX.map(e=>`<label style="display:flex;align-items:center;gap:7px;padding:8px;background:var(--bg2);border-radius:var(--rx);margin-bottom:3px;cursor:pointer">
+    ${allEx().map(e=>`<label style="display:flex;align-items:center;gap:7px;padding:8px;background:var(--bg2);border-radius:var(--rx);margin-bottom:3px;cursor:pointer">
       <input type="checkbox" id="ce-${e.id}" style="width:14px;height:14px;accent-color:var(--a);flex-shrink:0">
       <span style="font-size:12px;font-weight:500">${e.e} ${e.name} <span style="font-size:10px;color:var(--t3)">· ${e.muscle}</span></span>
     </label>`).join('')}
   </div>
   <button class="btn bp bfull" onclick="lCust()">Commencer →</button>`);}
-function lCust(){const name=document.getElementById('cn')?.value||'Séance libre';const ids=EX.filter(e=>document.getElementById('ce-'+e.id)?.checked).map(e=>e.id);if(!ids.length){toast('Sélectionne au moins un exercice');return;}const ps=gP();ps['_custom']={name,color:'#2D6A4F',muscles:'Personnalisé',exs:ids};DB.savePresets(ps);closeM();lW('_custom');}
+function lCust(){const name=document.getElementById('cn')?.value||'Séance libre';const ids=allEx().filter(e=>document.getElementById('ce-'+e.id)?.checked).map(e=>e.id);if(!ids.length){toast('Sélectionne au moins un exercice');return;}const ps=gP();ps['_custom']={name,color:'#2D6A4F',muscles:'Personnalisé',exs:ids};DB.savePresets(ps);closeM();lW('_custom');}
 function lW(k){closeM();const p=gP()[k];wo={k,type:p.name,exs:p.exs.map(id=>({id,sets:[{kg:'',reps:'',done:false}],note:''})),startTime:Date.now(),pre:{e:svs.e,s:svs.s,pain:document.getElementById('pp')?.value||''},prs:[]};document.getElementById('wt').textContent=p.name;document.getElementById('wo').classList.add('open');rWoBody();if(woI)clearInterval(woI);woI=setInterval(()=>{const el=Date.now()-wo.startTime;const m=Math.floor(el/60000),s=Math.floor((el%60000)/1000);const e=document.getElementById('wc');if(e)e.textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;uWoF();},1000);}
 
 // ══════════════════════════════════════════
@@ -682,9 +686,9 @@ function rWoBody(){const body=document.getElementById('wob');if(!body||!wo)retur
 function sRow(ei,si,set){return`<div class="sr" id="sr-${ei}-${si}"><div class="sn">${si+1}</div><input class="si" type="number" placeholder="kg" value="${set.kg||''}" inputmode="decimal" oninput="wo.exs[${ei}].sets[${si}].kg=this.value"><input class="si" type="number" placeholder="reps" value="${set.reps||''}" inputmode="numeric" oninput="wo.exs[${ei}].sets[${si}].reps=this.value"><button class="sc ${set.done?'done':''}" onclick="togSet(${ei},${si})">✓</button></div>`;}
 function togSet(ei,si){if(!wo)return;const set=wo.exs[ei].sets[si];set.done=!set.done;const btn=document.querySelector(`#sr-${ei}-${si} .sc`);if(btn)btn.className='sc'+(set.done?' done':'');if(set.done){const id=wo.exs[ei].id;const kg=parseFloat(set.kg)||0,reps=parseInt(set.reps)||0;if(kg>0&&reps>0){const rm=c1RM(kg,reps);const prev=best1RM(id);if(rm>prev){wo.prs.push({id,kg,reps,rm});toast('🏆 PR '+gEx(id).name+' '+kg+'kg×'+reps+'!');}}startR(DB.settings().rest||90);}uWoF();}
 function addSet(ei){if(!wo)return;const ex=wo.exs[ei];const last=ex.sets[ex.sets.length-1];ex.sets.push({kg:last?.kg||'',reps:last?.reps||'',done:false});const c=document.getElementById('sets-'+ei);if(c){const si=ex.sets.length-1;const d=document.createElement('div');d.innerHTML=sRow(ei,si,ex.sets[si]);c.appendChild(d.firstChild);}}
-function repEx(ei){openM(`<div class="mt">Changer l'exercice</div><div style="max-height:420px;overflow-y:auto">${EX.map(e=>`<div class="er" onclick="doRep(${ei},'${e.id}')"><div class="ei">${e.e}</div><div><div style="font-weight:600;font-size:13px">${e.name}</div><div style="font-size:10px;color:var(--t2)">${e.muscle}</div></div></div>`).join('')}</div>`);}
+function repEx(ei){openM(`<div class="mt">Changer l'exercice</div><div style="max-height:420px;overflow-y:auto">${allEx().map(e=>`<div class="er" onclick="doRep(${ei},'${e.id}')"><div class="ei">${e.e}</div><div><div style="font-weight:600;font-size:13px">${e.name}</div><div style="font-size:10px;color:var(--t2)">${e.muscle}</div></div></div>`).join('')}</div>`);}
 function doRep(ei,id){if(!wo)return;wo.exs[ei]={id,sets:[{kg:'',reps:'',done:false}],note:''};closeM();rWoBody();toast(gEx(id).name+' !');}
-function addExMid(){openM(`<div class="mt">Ajouter un exercice</div><div style="max-height:440px;overflow-y:auto">${EX.map(e=>`<div class="er" onclick="pushEx('${e.id}')"><div class="ei">${e.e}</div><div><div style="font-weight:600;font-size:13px">${e.name}</div><div style="font-size:10px;color:var(--t2)">${e.muscle}</div></div></div>`).join('')}</div>`);}
+function addExMid(){openM(`<div class="mt">Ajouter un exercice</div><div style="max-height:440px;overflow-y:auto">${allEx().map(e=>`<div class="er" onclick="pushEx('${e.id}')"><div class="ei">${e.e}</div><div><div style="font-weight:600;font-size:13px">${e.name}</div><div style="font-size:10px;color:var(--t2)">${e.muscle}</div></div></div>`).join('')}</div>`);}
 function pushEx(id){if(!wo)return;wo.exs.push({id,sets:[{kg:'',reps:'',done:false}],note:''});closeM();rWoBody();toast(gEx(id).name+' ajouté !');}
 function uWoF(){const a=document.getElementById('wse'),b=document.getElementById('wvo'),c=document.getElementById('wpr');if(a)a.textContent=tSets();if(b)b.textContent=tVol()+'kg';if(c)c.textContent=wo?.prs.length||0;}
 function openRC(){const cur=DB.settings().rest||90;openM(`<div class="mt">⏱ Repos</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px">${[60,90,120,150,180,240].map(s=>`<button class="btn ${cur===s?'bp':'bg'}" onclick="setR(${s})">${s}s</button>`).join('')}</div><label class="lbl">Personnalisé (s)</label><input class="inp" type="number" id="rc" value="${cur}" style="margin-bottom:10px"><button class="btn bp bfull" onclick="setR(parseInt(document.getElementById('rc').value)||90)">Appliquer</button>`);}
@@ -703,8 +707,8 @@ function skipR(){clearInterval(rI);document.getElementById('ro').classList.remov
 // ══════════════════════════════════════════
 // EDIT PRESET
 // ══════════════════════════════════════════
-function editP(k){const p=gP()[k];openM(`<div class="mt">✏️ ${p.name}</div><div style="max-height:350px;overflow-y:auto;margin-bottom:11px">${EX.map(e=>`<label style="display:flex;align-items:center;gap:7px;padding:7px;background:var(--bg2);border-radius:var(--rx);margin-bottom:3px;cursor:pointer"><input type="checkbox" id="ep-${e.id}" ${p.exs.includes(e.id)?'checked':''} style="width:14px;height:14px;accent-color:var(--a);flex-shrink:0"><span style="font-size:12px;font-weight:500">${e.e} ${e.name} <span style="font-size:10px;color:var(--t3)">· ${e.muscle}</span></span></label>`).join('')}</div><button class="btn bp bfull" style="margin-bottom:5px" onclick="saveP('${k}')">Sauvegarder</button><button class="btn bg bfull" onclick="resetP('${k}')">Réinitialiser</button>`);}
-function saveP(k){const ps=gP();const ids=EX.filter(e=>document.getElementById('ep-'+e.id)?.checked).map(e=>e.id);if(!ids.length){toast('Sélectionne au moins un exercice');return;}ps[k].exs=ids;DB.savePresets(ps);closeM();toast('Mis à jour !');render();}
+function editP(k){const p=gP()[k];openM(`<div class="mt">✏️ ${p.name}</div><div style="max-height:350px;overflow-y:auto;margin-bottom:11px">${allEx().map(e=>`<label style="display:flex;align-items:center;gap:7px;padding:7px;background:var(--bg2);border-radius:var(--rx);margin-bottom:3px;cursor:pointer"><input type="checkbox" id="ep-${e.id}" ${p.exs.includes(e.id)?'checked':''} style="width:14px;height:14px;accent-color:var(--a);flex-shrink:0"><span style="font-size:12px;font-weight:500">${e.e} ${e.name} <span style="font-size:10px;color:var(--t3)">· ${e.muscle}</span></span></label>`).join('')}</div><button class="btn bp bfull" style="margin-bottom:5px" onclick="saveP('${k}')">Sauvegarder</button><button class="btn bg bfull" onclick="resetP('${k}')">Réinitialiser</button>`);}
+function saveP(k){const ps=gP();const ids=allEx().filter(e=>document.getElementById('ep-'+e.id)?.checked).map(e=>e.id);if(!ids.length){toast('Sélectionne au moins un exercice');return;}ps[k].exs=ids;DB.savePresets(ps);closeM();toast('Mis à jour !');render();}
 function resetP(k){const ps=gP();ps[k]=JSON.parse(JSON.stringify(DP[k]));DB.savePresets(ps);closeM();toast('Réinitialisé');render();}
 
 // ══════════════════════════════════════════
@@ -714,7 +718,7 @@ function openAddPast(){const ps=gP();openM(`<div class="mt">Séance passée</div
   <div style="margin-bottom:9px"><label class="lbl">Date</label><input class="inp" type="date" id="pd" value="${new Date().toISOString().split('T')[0]}"></div>
   <div style="margin-bottom:9px"><label class="lbl">Type</label><select class="inp" id="pt">${Object.entries(ps).map(([k,p])=>`<option value="${k}">${p.name}</option>`).join('')}<option value="_libre">Libre</option></select></div>
   <div style="margin-bottom:9px"><label class="lbl">Durée (min)</label><input class="inp" type="number" id="pdu" placeholder="60" inputmode="numeric"></div>
-  <div style="margin-bottom:11px"><label class="lbl">Exercices</label><div style="max-height:190px;overflow-y:auto;border:1.5px solid var(--bd);border-radius:var(--rs);padding:5px">${EX.map(e=>`<label style="display:flex;align-items:center;gap:6px;padding:7px;cursor:pointer"><input type="checkbox" class="px" data-id="${e.id}" style="accent-color:var(--a)"><span style="font-size:12px;font-weight:500">${e.e} ${e.name}</span></label>`).join('')}</div></div>
+  <div style="margin-bottom:11px"><label class="lbl">Exercices</label><div style="max-height:190px;overflow-y:auto;border:1.5px solid var(--bd);border-radius:var(--rs);padding:5px">${allEx().map(e=>`<label style="display:flex;align-items:center;gap:6px;padding:7px;cursor:pointer"><input type="checkbox" class="px" data-id="${e.id}" style="accent-color:var(--a)"><span style="font-size:12px;font-weight:500">${e.e} ${e.name}</span></label>`).join('')}</div></div>
   <button class="btn bp bfull" onclick="savePast()">Enregistrer →</button>`);}
 function savePast(){const ds=document.getElementById('pd')?.value,tk=document.getElementById('pt')?.value;const dur=parseInt(document.getElementById('pdu')?.value)||60;const ids=[...document.querySelectorAll('.px:checked')].map(i=>i.dataset.id);if(!ds||!ids.length){toast('Remplis la date et au moins un exercice');return;}const ps=gP();const s={id:Date.now(),date:new Date(ds).getTime(),presetKey:tk,type:ps[tk]?.name||'Libre',duration:dur,exs:ids.map(id=>({id,sets:[{kg:'',reps:'',done:true}],note:''})),volume:0,sets:ids.length,prs:[],preSession:{},calories:dur*7};const ss=DB.sessions();ss.push(s);ss.sort((a,b)=>b.date-a.date);DB.saveSessions(ss);closeM();toast('Enregistrée !');render();}
 
@@ -1037,7 +1041,7 @@ function rGoalsInline(){
   }).join('');
 }
 function openAG(){openM(`<div class="mt">Nouvel objectif</div>
-  <div style="margin-bottom:9px"><label class="lbl">Exercice</label><select class="inp" id="ge">${EX.map(e=>`<option value="${e.id}">${e.e} ${e.name} · ${e.muscle}</option>`).join('')}</select></div>
+  <div style="margin-bottom:9px"><label class="lbl">Exercice</label><select class="inp" id="ge">${allEx().map(e=>`<option value="${e.id}">${e.e} ${e.name} · ${e.muscle}</option>`).join('')}</select></div>
   <div style="margin-bottom:9px"><label class="lbl">Type</label><select class="inp" id="gt"><option value="1rm">1RM estimée (kg)</option><option value="reps">Reps max</option><option value="kg">Charge à la série (kg)</option></select></div>
   <div style="margin-bottom:9px"><label class="lbl">Valeur cible</label><input class="inp" type="number" id="gv" placeholder="Ex: 20" inputmode="decimal"></div>
   <div style="margin-bottom:14px"><label class="lbl">Note (optionnel)</label><input class="inp" id="gn" placeholder="Ex: d'ici 3 mois"></div>
@@ -1050,8 +1054,39 @@ function delG(i){const g=DB.goals();g.splice(i,1);DB.saveGoals(g);render();toast
 // ══════════════════════════════════════════
 function expD(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({sessions:DB.sessions(),goals:DB.goals(),body:DB.body(),profile:DB.profile()},null,2)],{type:'application/json'}));a.download='fitpro_export.json';a.click();localStorage.setItem('fp4_lastExport',Date.now());}
 function checkExportReminder(){const last=parseInt(localStorage.getItem('fp4_lastExport')||'0');const days=Math.floor((Date.now()-last)/86400000);if(days>=30&&DB.sessions().length>0){setTimeout(()=>{openM(`<div class="mt">💾 Sauvegarde recommandée</div><p style="color:var(--t2);margin-bottom:14px;font-size:13px">Tu n'as pas exporté tes données depuis <strong>${last===0?'plus de 30 jours':days+' jours'}</strong>.<br><br>Si tu perds ton téléphone ou vides le cache, tout disparaît. Prends 2 secondes pour sauvegarder.</p><button class="btn bp bfull" style="margin-bottom:8px" onclick="expD();closeM();toast('Sauvegarde effectuée !')">📤 Exporter maintenant</button><button class="btn bg bfull" onclick="closeM()">Plus tard</button>`);},1500);}}
+const MUSCLES_LIST=['Dos','Pectoraux','Épaules','Biceps','Triceps','Quadriceps','Ischio-jambiers','Fessiers','Mollets','Abdominaux','Autre'];
+function openCreateEx(){
+  const customs=DB.customExercises();
+  openM(`<div class="mt">✚ Créer un exercice</div>
+    <div style="margin-bottom:9px"><label class="lbl">Nom</label><input class="inp" id="ex-name" placeholder="Ex: Pistol Squat, EZ Bar Curl…"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:9px">
+      <div><label class="lbl">Emoji</label><input class="inp" id="ex-emoji" placeholder="💪" maxlength="2" style="font-size:22px;text-align:center"></div>
+      <div><label class="lbl">Groupe musculaire</label><select class="inp" id="ex-muscle">${MUSCLES_LIST.map(m=>`<option>${m}</option>`).join('')}</select></div>
+    </div>
+    <button class="btn bp bfull" style="margin-bottom:12px" onclick="saveCustomEx()">Créer →</button>
+    ${customs.length?`<div class="div"></div><div class="slbl" style="margin-top:10px">Mes exercices (${customs.length})</div>
+    ${customs.map((e,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bg2)">
+      <span style="font-size:20px">${e.e}</span>
+      <div style="flex:1"><div style="font-size:13px;font-weight:600">${e.name}</div><div style="font-size:10px;color:var(--t3)">${e.muscle}</div></div>
+      <button onclick="delCustomEx(${i})" style="border:none;background:transparent;color:var(--t3);font-size:16px;cursor:pointer">✕</button>
+    </div>`).join('')}`:''}
+  `);
+}
+function saveCustomEx(){
+  const name=document.getElementById('ex-name')?.value?.trim();
+  const emoji=document.getElementById('ex-emoji')?.value?.trim()||'💪';
+  const muscle=document.getElementById('ex-muscle')?.value||'Autre';
+  if(!name){toast('Donne un nom à l\'exercice');return;}
+  const id='custom_'+name.toLowerCase().replace(/[^a-z0-9]/g,'_').substring(0,30)+'_'+Date.now();
+  const customs=DB.customExercises();
+  customs.push({id,name,muscle,eq:'Libre',e:emoji});
+  DB.saveCustomExercises(customs);
+  closeM();toast(name+' ajouté !');render();
+}
+function delCustomEx(i){
+  const customs=DB.customExercises();customs.splice(i,1);DB.saveCustomExercises(customs);openCreateEx();}
 function confReset(){openM(`<div class="mt">⚠️ Réinitialiser ?</div><p style="color:var(--t2);margin-bottom:14px;font-size:12px">Toutes tes données seront supprimées.</p><button class="btn bd_ bfull" style="margin-bottom:5px" onclick="doReset()">Oui, tout supprimer</button><button class="btn bg bfull" onclick="closeM()">Annuler</button>`);}
-function doReset(){['sessions','goals','presets','settings','imp','body','profile'].forEach(k=>localStorage.removeItem('fp4_'+k));closeM();toast('Réinitialisé');render();}
+function doReset(){['sessions','goals','presets','settings','imp','body','profile','customex'].forEach(k=>localStorage.removeItem('fp4_'+k));closeM();toast('Réinitialisé');render();}
 
 // ══════════════════════════════════════════
 // MODAL
