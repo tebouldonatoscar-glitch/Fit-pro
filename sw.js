@@ -1,4 +1,4 @@
-const CACHE = 'fitpro-v4';
+const CACHE = 'fitpro-v5';
 const ASSETS = [
   '/',
   '/index.html',
