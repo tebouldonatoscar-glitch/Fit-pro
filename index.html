@@ -253,7 +253,7 @@ function wkSess(){return DB.sessions().filter(s=>Date.now()-s.date<7*86400000);}
 function streak(){const ss=DB.sessions();if(!ss.length)return 0;const days=[...new Set(ss.map(s=>Math.floor(s.date/86400000)))].sort((a,b)=>b-a);const t=Math.floor(Date.now()/86400000);let st=0,c=t;for(const d of days){if(d===c||d===c-1){st++;c=d;}else break;}return st;}
 function nxt(){const ss=DB.sessions();if(!ss.length)return Object.keys(gP())[0];const l=ss[0]?.presetKey;const ks=Object.keys(gP());if(!l)return ks[0];const i=ks.indexOf(l);return ks[(i+1)%ks.length];}
 function tSets(){return wo?wo.exs.reduce((t,e)=>t+e.sets.filter(s=>s.done).length,0):0;}
-function tVol(){return wo?Math.round(wo.exs.reduce((t,e)=>t+e.sets.filter(s=>s.done).reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0),0)):0;}
+function tVol(){if(!wo)return 0;const bwKg=parseFloat(DB.profile().weight)||0;return Math.round(wo.exs.reduce((t,e)=>t+e.sets.filter(s=>s.done).reduce((a,s)=>a+(e.bw?bwKg:parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0),0));}
 const QS=['Chaque répétition te rapproche de ta meilleure version.','La régularité bat l\'intensité sur le long terme.','Ton corps peut le faire — c\'est l\'esprit qu\'il faut convaincre.','La douleur d\'aujourd\'hui est la force de demain.','Les progrès se construisent série après série.','Un effort de plus. Toujours un de plus.','Ce que tu répètes, tu le deviens.'];
 
 // ══════════════════════════════════════════
@@ -655,7 +655,7 @@ function startCF(){openM(`<div class="mt">Séance libre</div>
   </div>
   <button class="btn bp bfull" onclick="lCust()">Commencer →</button>`);}
 function lCust(){const name=document.getElementById('cn')?.value||'Séance libre';const ids=allEx().filter(e=>document.getElementById('ce-'+e.id)?.checked).map(e=>e.id);if(!ids.length){toast('Sélectionne au moins un exercice');return;}const ps=gP();ps['_custom']={name,color:'#2D6A4F',muscles:'Personnalisé',exs:ids};DB.savePresets(ps);closeM();lW('_custom');}
-function lW(k){closeM();const p=gP()[k];wo={k,type:p.name,exs:p.exs.map(id=>({id,sets:[{kg:'',reps:'',done:false}],note:''})),startTime:Date.now(),pre:{e:svs.e,s:svs.s,pain:document.getElementById('pp')?.value||''},prs:[]};document.getElementById('wt').textContent=p.name;document.getElementById('wo').classList.add('open');rWoBody();if(woI)clearInterval(woI);woI=setInterval(()=>{const el=Date.now()-wo.startTime;const m=Math.floor(el/60000),s=Math.floor((el%60000)/1000);const e=document.getElementById('wc');if(e)e.textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;uWoF();},1000);}
+function lW(k){closeM();const p=gP()[k];const defRest=DB.settings().rest||90;wo={k,type:p.name,exs:p.exs.map(id=>({id,sets:[{kg:'',reps:'',done:false}],note:'',rest:defRest,bw:false})),startTime:Date.now(),pre:{e:svs.e,s:svs.s,pain:document.getElementById('pp')?.value||''},prs:[]};document.getElementById('wt').textContent=p.name;document.getElementById('wo').classList.add('open');rWoBody();if(woI)clearInterval(woI);woI=setInterval(()=>{const el=Date.now()-wo.startTime;const m=Math.floor(el/60000),s=Math.floor((el%60000)/1000);const e=document.getElementById('wc');if(e)e.textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;uWoF();},1000);}
 
 // ══════════════════════════════════════════
 // WORKOUT
@@ -663,33 +663,41 @@ function lW(k){closeM();const p=gP()[k];wo={k,type:p.name,exs:p.exs.map(id=>({id
 function rWoBody(){const body=document.getElementById('wob');if(!body||!wo)return;
   body.innerHTML=wo.exs.map((ex,ei)=>{const e=gEx(ex.id);const hist=gLS(ex.id,3);const sug=sugKg(ex.id);
     return`<div style="margin-bottom:20px" id="eb-${ei}">
-      <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px">
+      <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px;flex-wrap:wrap">
         <div class="ei">${e.e}</div>
         <div style="flex:1"><div style="font-weight:700;font-size:14px">${e.name}</div><div style="font-size:10px;color:var(--t2)">${e.muscle} · ${e.eq}</div></div>
-        ${sug!==null?`<span class="chip cg" style="font-size:10px">💡 ${sug}kg</span>`:''}
+        <span id="bw-chip-${ei}" class="chip ${ex.bw?'cg':'cgr'}" style="cursor:pointer;font-size:10px" onclick="togBW(${ei})">${ex.bw?'🏃 BW':'BW'}</span>
+        ${sug!==null&&!ex.bw?`<span class="chip cg" style="font-size:10px">💡 ${sug}kg</span>`:''}
       </div>
       ${hist.length?`<div style="background:var(--bg2);border-radius:var(--rs);padding:7px 9px;margin-bottom:6px">
         <div style="font-size:9px;font-weight:700;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px">Historique</div>
-        ${hist.map(h=>`<div style="font-size:10px;color:var(--t2);font-weight:500;margin-bottom:2px">📅 ${fDs(h.date)} → ${h.sets.filter(s=>s.done).map(s=>`${s.kg||'?'}kg×${s.reps||'?'}`).join(' · ')||'—'}</div>`).join('')}
+        ${hist.map(h=>`<div style="font-size:10px;color:var(--t2);font-weight:500;margin-bottom:2px">📅 ${fDs(h.date)} → ${h.sets.filter(s=>s.done).map(s=>`${s.bw?'BW':s.kg||'?'}kg×${s.reps||'?'}`).join(' · ')||'—'}</div>`).join('')}
       </div>`:''}
-      <div style="display:grid;grid-template-columns:22px 1fr 1fr 34px;gap:5px;margin-bottom:4px"><div></div><div style="text-align:center;font-size:9px;font-weight:700;color:var(--t3)">KG</div><div style="text-align:center;font-size:9px;font-weight:700;color:var(--t3)">REPS</div><div></div></div>
-      <div id="sets-${ei}">${ex.sets.map((s,si)=>sRow(ei,si,s)).join('')}</div>
-      <div style="display:flex;gap:5px;margin-top:4px">
+      <div style="display:grid;grid-template-columns:22px 1fr 1fr 34px;gap:5px;margin-bottom:4px"><div></div><div id="kg-hdr-${ei}" style="text-align:center;font-size:9px;font-weight:700;color:var(--t3)">${ex.bw?'BW':'KG'}</div><div style="text-align:center;font-size:9px;font-weight:700;color:var(--t3)">REPS</div><div></div></div>
+      <div id="sets-${ei}">${ex.sets.map((s,si)=>sRow(ei,si,s,ex.bw)).join('')}</div>
+      <div style="display:flex;gap:5px;margin-top:4px;flex-wrap:wrap">
         <button class="btn bg bxs" onclick="addSet(${ei})">+ Série</button>
         <button class="btn bg bxs" onclick="repEx(${ei})">🔄 Changer</button>
-        <button class="btn bg bxs" style="margin-left:auto" onclick="openRC()">⏱</button>
+        <button class="btn bg bxs" id="rest-btn-${ei}" onclick="setExRest(${ei})">⏱ ${ex.rest||DB.settings().rest||90}s</button>
       </div>
       <input class="inp" style="margin-top:5px;font-size:11px;padding:7px 9px" placeholder="Note…" value="${ex.note||''}" oninput="wo.exs[${ei}].note=this.value">
       <div class="div" style="margin-top:10px"></div>
     </div>`;
   }).join('');}
-function sRow(ei,si,set){return`<div class="sr" id="sr-${ei}-${si}"><div class="sn">${si+1}</div><input class="si" type="number" placeholder="kg" value="${set.kg||''}" inputmode="decimal" oninput="wo.exs[${ei}].sets[${si}].kg=this.value"><input class="si" type="number" placeholder="reps" value="${set.reps||''}" inputmode="numeric" oninput="wo.exs[${ei}].sets[${si}].reps=this.value"><button class="sc ${set.done?'done':''}" onclick="togSet(${ei},${si})">✓</button></div>`;}
-function togSet(ei,si){if(!wo)return;const set=wo.exs[ei].sets[si];set.done=!set.done;const btn=document.querySelector(`#sr-${ei}-${si} .sc`);if(btn)btn.className='sc'+(set.done?' done':'');if(set.done){const id=wo.exs[ei].id;const kg=parseFloat(set.kg)||0,reps=parseInt(set.reps)||0;if(kg>0&&reps>0){const rm=c1RM(kg,reps);const prev=best1RM(id);if(rm>prev){wo.prs.push({id,kg,reps,rm});toast('🏆 PR '+gEx(id).name+' '+kg+'kg×'+reps+'!');}}startR(DB.settings().rest||90);}uWoF();}
-function addSet(ei){if(!wo)return;const ex=wo.exs[ei];const last=ex.sets[ex.sets.length-1];ex.sets.push({kg:last?.kg||'',reps:last?.reps||'',done:false});const c=document.getElementById('sets-'+ei);if(c){const si=ex.sets.length-1;const d=document.createElement('div');d.innerHTML=sRow(ei,si,ex.sets[si]);c.appendChild(d.firstChild);}}
-function repEx(ei){openM(`<div class="mt">Changer l'exercice</div><div style="max-height:420px;overflow-y:auto">${allEx().map(e=>`<div class="er" onclick="doRep(${ei},'${e.id}')"><div class="ei">${e.e}</div><div><div style="font-weight:600;font-size:13px">${e.name}</div><div style="font-size:10px;color:var(--t2)">${e.muscle}</div></div></div>`).join('')}</div>`);}
-function doRep(ei,id){if(!wo)return;wo.exs[ei]={id,sets:[{kg:'',reps:'',done:false}],note:''};closeM();rWoBody();toast(gEx(id).name+' !');}
-function addExMid(){openM(`<div class="mt">Ajouter un exercice</div><div style="max-height:440px;overflow-y:auto">${allEx().map(e=>`<div class="er" onclick="pushEx('${e.id}')"><div class="ei">${e.e}</div><div><div style="font-weight:600;font-size:13px">${e.name}</div><div style="font-size:10px;color:var(--t2)">${e.muscle}</div></div></div>`).join('')}</div>`);}
-function pushEx(id){if(!wo)return;wo.exs.push({id,sets:[{kg:'',reps:'',done:false}],note:''});closeM();rWoBody();toast(gEx(id).name+' ajouté !');}
+function sRow(ei,si,set,bw){const kgField=bw?`<div class="si" style="display:flex;align-items:center;justify-content:center;background:var(--al);color:var(--a);font-size:11px;font-weight:700;border:1.5px solid var(--a2);border-radius:var(--rx)">BW</div>`:`<input class="si" type="number" placeholder="kg" value="${set.kg||''}" inputmode="decimal" oninput="wo.exs[${ei}].sets[${si}].kg=this.value">`;return`<div class="sr" id="sr-${ei}-${si}"><div class="sn">${si+1}</div>${kgField}<input class="si" type="number" placeholder="reps" value="${set.reps||''}" inputmode="numeric" oninput="wo.exs[${ei}].sets[${si}].reps=this.value"><button class="sc ${set.done?'done':''}" onclick="togSet(${ei},${si})">✓</button></div>`;}
+function togBW(ei){if(!wo)return;wo.exs[ei].bw=!wo.exs[ei].bw;const bw=wo.exs[ei].bw;const c=document.getElementById('sets-'+ei);if(c)c.innerHTML=wo.exs[ei].sets.map((s,si)=>sRow(ei,si,s,bw)).join('');const chip=document.getElementById('bw-chip-'+ei);if(chip){chip.className='chip '+(bw?'cg':'cgr');chip.textContent=bw?'🏃 BW':'BW';}const kghdr=document.getElementById('kg-hdr-'+ei);if(kghdr)kghdr.textContent=bw?'BW':'KG';}
+function togSet(ei,si){if(!wo)return;const set=wo.exs[ei].sets[si];set.done=!set.done;const btn=document.querySelector(`#sr-${ei}-${si} .sc`);if(btn)btn.className='sc'+(set.done?' done':'');if(set.done){const id=wo.exs[ei].id;const bw=wo.exs[ei].bw;const bwKg=parseFloat(DB.profile().weight)||0;const kg=bw?bwKg:parseFloat(set.kg)||0;const reps=parseInt(set.reps)||0;if(reps>0&&(kg>0)){const rm=c1RM(kg,reps);const prev=best1RM(id);if(rm>prev){wo.prs.push({id,kg,reps,rm});toast('🏆 PR '+gEx(id).name+' '+(bw?'BW':kg+'kg')+'×'+reps+'!');}}startR(wo.exs[ei].rest||DB.settings().rest||90);}uWoF();}
+function addSet(ei){if(!wo)return;const ex=wo.exs[ei];const last=ex.sets[ex.sets.length-1];ex.sets.push({kg:last?.kg||'',reps:last?.reps||'',done:false});const c=document.getElementById('sets-'+ei);if(c){const si=ex.sets.length-1;const d=document.createElement('div');d.innerHTML=sRow(ei,si,ex.sets[si],ex.bw);c.appendChild(d.firstChild);}}
+let _exCB=null;
+function exListHTML(list){return list.length?list.map(e=>`<div class="er" onclick="_exCB('${e.id}')"><div class="ei">${e.e}</div><div><div style="font-weight:600;font-size:13px">${e.name}</div><div style="font-size:10px;color:var(--t2)">${e.muscle}</div></div></div>`).join(''):`<div style="padding:24px;text-align:center;color:var(--t3);font-size:13px">Aucun résultat</div>`;}
+function filterExList(q){const f=allEx().filter(e=>!q||e.name.toLowerCase().includes(q.toLowerCase())||e.muscle.toLowerCase().includes(q.toLowerCase()));const el=document.getElementById('exlist');if(el)el.innerHTML=exListHTML(f);}
+function exSearchModal(title,cb){_exCB=cb;return`<div class="mt">${title}</div><input class="inp" placeholder="🔍 Rechercher un exercice…" oninput="filterExList(this.value)" style="margin-bottom:8px"><div id="exlist" style="max-height:380px;overflow-y:auto">${exListHTML(allEx())}</div>`;}
+function repEx(ei){openM(exSearchModal('Changer l\'exercice',id=>doRep(ei,id)));}
+function doRep(ei,id){if(!wo)return;wo.exs[ei]={id,sets:[{kg:'',reps:'',done:false}],note:'',rest:wo.exs[ei]?.rest||DB.settings().rest||90,bw:false};closeM();rWoBody();toast(gEx(id).name+' !');}
+function addExMid(){openM(exSearchModal('Ajouter un exercice',id=>pushEx(id)));}
+function pushEx(id){if(!wo)return;wo.exs.push({id,sets:[{kg:'',reps:'',done:false}],note:'',rest:DB.settings().rest||90,bw:false});closeM();rWoBody();toast(gEx(id).name+' ajouté !');}
+function setExRest(ei){const cur=wo.exs[ei].rest||DB.settings().rest||90;openM(`<div class="mt">⏱ Repos — ${gEx(wo.exs[ei].id).name}</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px">${[45,60,90,120,150,180,240].map(s=>`<button class="btn ${cur===s?'bp':'bg'}" onclick="applyExRest(${ei},${s})">${s}s</button>`).join('')}</div><label class="lbl">Personnalisé (s)</label><input class="inp" type="number" id="rc" value="${cur}" style="margin-bottom:10px"><button class="btn bp bfull" onclick="applyExRest(${ei},parseInt(document.getElementById('rc').value)||90)">Appliquer</button>`);}
+function applyExRest(ei,s){wo.exs[ei].rest=s;const btn=document.getElementById('rest-btn-'+ei);if(btn)btn.textContent='⏱ '+s+'s';closeM();}
 function uWoF(){const a=document.getElementById('wse'),b=document.getElementById('wvo'),c=document.getElementById('wpr');if(a)a.textContent=tSets();if(b)b.textContent=tVol()+'kg';if(c)c.textContent=wo?.prs.length||0;}
 function openRC(){const cur=DB.settings().rest||90;openM(`<div class="mt">⏱ Repos</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px">${[60,90,120,150,180,240].map(s=>`<button class="btn ${cur===s?'bp':'bg'}" onclick="setR(${s})">${s}s</button>`).join('')}</div><label class="lbl">Personnalisé (s)</label><input class="inp" type="number" id="rc" value="${cur}" style="margin-bottom:10px"><button class="btn bp bfull" onclick="setR(parseInt(document.getElementById('rc').value)||90)">Appliquer</button>`);}
 function setR(s){const st=DB.settings();st.rest=s;DB.saveSettings(st);closeM();startR(s);}
