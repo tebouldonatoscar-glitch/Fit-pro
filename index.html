@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>FitPro</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#2D6A4F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="FitPro">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root{--bg:#F7F6F3;--bg2:#EFEDE8;--w:#FFF;--t:#1A1814;--t2:#6B6760;--t3:#A8A49E;--bd:#E4E1DA;--bd2:#D4D0C8;--a:#2D6A4F;--a2:#40916C;--al:#D8F3DC;--ax:#F0FAF2;--red:#C0392B;--redl:#FDECEA;--or:#E07B39;--orl:#FEF0E6;--bl:#2C5F8A;--bll:#E8F1F8;--pu:#6B4FA0;--pul:#F0EBF8;--go:#B8860B;--gol:#FDF8E1;--sh:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);--r:16px;--rs:10px;--rx:6px}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-family:'DM Sans',sans-serif}
+#app{display:flex;flex-direction:column;height:100vh}
+#sc{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:88px}
+#sc::-webkit-scrollbar{width:0}
+#nav{position:fixed;bottom:0;left:0;right:0;height:76px;background:rgba(247,246,243,.97);backdrop-filter:blur(20px);border-top:1px solid var(--bd);display:flex;z-index:100}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:transparent;color:var(--t3);cursor:pointer;font-family:'DM Sans',sans-serif;padding:5px 0;transition:color .2s}
+.nb .ni{font-size:17px;transition:transform .25s cubic-bezier(.34,1.56,.64,1)}.nb .nl{font-size:8px;font-weight:600;letter-spacing:.2px}
+.nb.on{color:var(--a)}.nb.on .ni{transform:scale(1.15)}
+.card{background:var(--w);border-radius:var(--r);border:1px solid var(--bd);padding:16px;box-shadow:var(--sh)}
+.flat{background:var(--bg2);border-radius:var(--r);padding:16px;border:1px solid var(--bd)}
+.ptitle{font-family:'DM Serif Display',serif;font-size:27px;line-height:1.1}
+.slbl{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:8px}
+.lbl{font-size:11px;font-weight:600;color:var(--t2);margin-bottom:4px;display:block}
+.btn{border:none;border-radius:var(--rs);padding:11px 14px;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:5px;transition:all .15s}
+.btn:active{transform:scale(.97)}
+.bp{background:var(--a);color:#fff;box-shadow:0 2px 8px rgba(45,106,79,.2)}.bp:hover{background:var(--a2)}
+.bg{background:transparent;color:var(--t2);border:1px solid var(--bd2)}.bg:hover{background:var(--bg2)}
+.bd_{background:var(--redl);color:var(--red);border:1px solid rgba(192,57,43,.12)}
+.bfull{width:100%}.bsm{padding:7px 11px;font-size:12px;border-radius:var(--rx)}.bxs{padding:4px 8px;font-size:11px;border-radius:var(--rx)}
+.inp{background:var(--bg2);border:1.5px solid var(--bd);border-radius:var(--rs);padding:10px 12px;color:var(--t);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;outline:none;width:100%;transition:border-color .2s,background .2s}
+.inp:focus{border-color:var(--a);background:var(--w)}.inp::placeholder{color:var(--t3)}
+select.inp option{background:#fff;color:var(--t)}
+.chip{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.cg{background:var(--al);color:var(--a)}.cr{background:var(--redl);color:var(--red)}.co{background:var(--orl);color:var(--or)}.cb{background:var(--bll);color:var(--bl)}.cgo{background:var(--gol);color:var(--go)}.cgr{background:var(--bg2);color:var(--t2);border:1px solid var(--bd)}
+.pb{background:var(--bg2);border-radius:99px;overflow:hidden}.pf{height:100%;border-radius:99px;transition:width 1s cubic-bezier(.34,1.56,.64,1)}
+.stars{display:flex;gap:5px}.star{font-size:22px;cursor:pointer;opacity:.25;transition:all .15s}.star.on{opacity:1}
+#mo{position:fixed;inset:0;background:rgba(26,24,20,.5);backdrop-filter:blur(6px);z-index:200;display:none;align-items:flex-end;justify-content:center}
+#mo.open{display:flex}
+#mb{background:var(--w);border-radius:24px 24px 0 0;padding:20px 18px 36px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;animation:su .3s cubic-bezier(.34,1.56,.64,1);position:relative}
+@keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mh{width:32px;height:4px;background:var(--bd2);border-radius:2px;margin:0 auto 14px}.mt{font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:12px}
+.mc_{position:absolute;top:15px;right:15px;width:27px;height:27px;border-radius:50%;border:none;background:var(--bg2);color:var(--t2);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center}
+#wo{position:fixed;inset:0;background:var(--bg);z-index:150;display:none;flex-direction:column}
+#wo.open{display:flex}
+#woh{padding:12px 15px;background:var(--w);border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:9px;box-shadow:var(--sh)}
+#wob{flex:1;overflow-y:auto;padding:13px 15px;padding-bottom:105px}
+#wof{position:fixed;bottom:0;left:0;right:0;padding:8px 13px 24px;background:var(--w);border-top:1px solid var(--bd);display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center}
+.sr{display:grid;grid-template-columns:22px 1fr 1fr 34px;gap:5px;align-items:center;margin-bottom:5px}
+.sn{font-size:11px;font-weight:700;color:var(--t3);text-align:center}
+.si{background:var(--bg2);border:1.5px solid var(--bd);border-radius:var(--rx);padding:8px 3px;color:var(--t);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;text-align:center;outline:none;width:100%;transition:border-color .2s}
+.si:focus{border-color:var(--a);background:var(--w)}
+.sc{width:32px;height:32px;border-radius:var(--rx);border:1.5px solid var(--bd2);background:transparent;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;font-size:13px;color:transparent}
+.sc.done{background:var(--a);border-color:var(--a);color:#fff}
+.hi{background:var(--w);border-radius:var(--r);border:1px solid var(--bd);padding:13px;margin-bottom:8px;cursor:pointer;transition:all .2s;box-shadow:var(--sh)}
+.hi:active{background:var(--bg2)}
+#toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--t);color:var(--w);padding:9px 16px;border-radius:99px;font-size:12px;font-weight:600;z-index:999;opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#ro{position:fixed;inset:0;background:rgba(247,246,243,.97);backdrop-filter:blur(12px);z-index:300;display:none;flex-direction:column;align-items:center;justify-content:center}
+#ro.open{display:flex}
+#rr{width:170px;height:170px;position:relative;margin-bottom:20px}
+#rr svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.rbg{fill:none;stroke:var(--bd2);stroke-width:6}.rp{fill:none;stroke:var(--a);stroke-width:6;stroke-linecap:round;transition:stroke-dashoffset .9s linear}
+#rn{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#rs{font-family:'DM Serif Display',serif;font-size:46px;color:var(--t);line-height:1}
+#rl{font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--t3);text-transform:uppercase;margin-top:3px}
+.cw{position:relative;height:170px}
+.er{display:flex;align-items:center;gap:9px;padding:10px;background:var(--w);border-radius:var(--rs);border:1px solid var(--bd);margin-bottom:5px;cursor:pointer;transition:all .2s}
+.er:active{background:var(--bg2)}
+.ei{width:38px;height:38px;border-radius:8px;background:var(--ax);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.sb{background:var(--w);border:1px solid var(--bd);border-radius:var(--r);padding:12px;text-align:center;box-shadow:var(--sh)}
+.sv{font-family:'DM Serif Display',serif;font-size:28px;line-height:1}.sl{font-size:10px;font-weight:600;color:var(--t3);letter-spacing:.5px;text-transform:uppercase;margin-top:2px}
+.rd{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0}
+.rdg{background:#2D6A4F}.rdo{background:#E07B39}.rdr{background:#C0392B}
+.div{height:1px;background:var(--bd);margin:11px 0}
+.gr{position:relative;width:56px;height:56px;flex-shrink:0}
+.gr svg{transform:rotate(-90deg)}
+.gp{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--a)}
+@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.fade{animation:fu .3s ease both}
+/* body stats */
+.bstat{background:var(--w);border-radius:var(--r);border:1px solid var(--bd);padding:14px;display:flex;align-items:center;gap:12px;margin-bottom:9px;box-shadow:var(--sh)}
+.bstat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+/* timeline dot */
+.tl-dot{width:8px;height:8px;border-radius:50%;background:var(--a);flex-shrink:0;margin-top:4px}
+.tl-line{width:2px;background:var(--bd);flex:1;min-height:12px;margin:2px auto}
+@media(min-width:600px){#sc{max-width:600px;margin:0 auto}#nav{max-width:600px;left:50%;transform:translateX(-50%)}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="sc"></div>
+  <nav id="nav">
+    <button class="nb on" onclick="go('home')" id="nb-home"><span class="ni">⌂</span><span class="nl">Accueil</span></button>
+    <button class="nb" onclick="go('seances')" id="nb-seances"><span class="ni">💪</span><span class="nl">Séances</span></button>
+    <button class="nb" onclick="go('objectifs')" id="nb-objectifs"><span class="ni">🎯</span><span class="nl">Objectifs</span></button>
+    <button class="nb" onclick="go('body')" id="nb-body"><span class="ni">⚖️</span><span class="nl">Corps</span></button>
+    <button class="nb" onclick="go('historique')" id="nb-historique"><span class="ni">📋</span><span class="nl">Historique</span></button>
+    <button class="nb" onclick="go('stats')" id="nb-stats"><span class="ni">📈</span><span class="nl">Stats</span></button>
+  </nav>
+</div>
+<div id="toast"></div>
+<div id="ro">
+  <div id="rr"><svg viewBox="0 0 170 170" width="170" height="170"><circle class="rbg" cx="85" cy="85" r="76"/><circle class="rp" id="rpr" cx="85" cy="85" r="76" stroke-dasharray="478" stroke-dashoffset="0"/></svg>
+    <div id="rn"><div id="rs">—</div><div id="rl">Repos</div></div>
+  </div>
+  <p style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:16px">Récupération…</p>
+  <button class="btn bg" onclick="skipR()">Passer ›</button>
+</div>
+<div id="wo">
+  <div id="woh">
+    <button class="btn bd_ bsm" onclick="confEnd()">Terminer</button>
+    <div style="flex:1;text-align:center"><div style="font-family:'DM Serif Display',serif;font-size:16px" id="wt">Séance</div><div style="font-size:10px;color:var(--t3);font-weight:500" id="wc">00:00</div></div>
+    <button class="btn bg bsm" onclick="addExMid()">+ Exercice</button>
+  </div>
+  <div id="wob"></div>
+  <div id="wof">
+    <div class="sb" style="padding:7px"><div class="sv" id="wse" style="font-size:19px">0</div><div class="sl">Séries</div></div>
+    <div class="sb" style="padding:7px"><div class="sv" id="wvo" style="font-size:19px">0</div><div class="sl">kg total</div></div>
+    <div class="sb" style="padding:7px"><div class="sv" id="wpr" style="font-size:19px">0</div><div class="sl">PR 🏆</div></div>
+  </div>
+</div>
+<div id="mo" onclick="closeMO(event)">
+  <div id="mb"><div class="mh"></div><button class="mc_" onclick="closeM()">✕</button><div id="mc"></div></div>
+</div>
+<script>
+const ISESS=[{"id":1000000,"date":1759312800000,"presetKey":"upper","type":"Upper","exs":[{"id":"row_cable_low","sets":[{"kg":"45","reps":"10","done":true},{"kg":"45","reps":"9","done":true}],"note":""},{"id":"machine_row","sets":[{"kg":"59","reps":"9","done":true},{"kg":"59","reps":"9","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"39","reps":"10","done":true},{"kg":"39","reps":"9","done":true}],"note":""},{"id":"bench_db","sets":[{"kg":"12","reps":"10","done":true},{"kg":"12","reps":"10","done":true},{"kg":"12","reps":"10","done":true}],"note":""},{"id":"machine_triceps","sets":[{"kg":"36","reps":"10","done":true},{"kg":"36","reps":"10","done":true},{"kg":"36","reps":"9","done":true}],"note":""},{"id":"curl_db","sets":[{"kg":"10","reps":"11","done":true},{"kg":"10","reps":"10","done":true},{"kg":"10","reps":"10","done":true}],"note":""}],"duration":60,"volume":4372,"sets":15,"prs":[],"preSession":{},"calories":420},{"id":2000000,"date":1759485600000,"presetKey":"lower","type":"Lower","exs":[{"id":"leg_curl_machine","sets":[{"kg":"32","reps":"10","done":true},{"kg":"32","reps":"12","done":true},{"kg":"32","reps":"12","done":true}],"note":""},{"id":"lat_raise_cable","sets":[{"kg":"","reps":"12","done":true},{"kg":"","reps":"12","done":true},{"kg":"","reps":"12","done":true}],"note":""},{"id":"rear_delt_machine","sets":[{"kg":"32","reps":"15","done":true},{"kg":"32","reps":"15","done":true}],"note":""},{"id":"triceps_pushdown_uni","sets":[{"kg":"6","reps":"10","done":true},{"kg":"6","reps":"12","done":true},{"kg":"6","reps":"12","done":true}],"note":""}],"duration":60,"volume":2252,"sets":11,"prs":[],"preSession":{},"calories":420},{"id":3000000,"date":1759744800000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"6","reps":"5","done":true},{"kg":"6","reps":"6","done":true},{"kg":"6","reps":"5","done":true}],"note":""},{"id":"machine_row","sets":[{"kg":"41","reps":"11","done":true},{"kg":"41","reps":"11","done":true},{"kg":"41","reps":"11","done":true}],"note":""},{"id":"pec_deck","sets":[{"kg":"35","reps":"10","done":true},{"kg":"35","reps":"10","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"45","reps":"9","done":true},{"kg":"45","reps":"9","done":true},{"kg":"45","reps":"9","done":true}],"note":""},{"id":"machine_triceps","sets":[{"kg":"41","reps":"10","done":true},{"kg":"41","reps":"10","done":true},{"kg":"41","reps":"10","done":true}],"note":""},{"id":"triceps_pushdown_uni","sets":[{"kg":"5","reps":"9","done":true},{"kg":"5","reps":"9","done":true}],"note":""},{"id":"curl_db","sets":[{"kg":"","reps":"10","done":true},{"kg":"","reps":"10","done":true},{"kg":"","reps":"10","done":true}],"note":""},{"id":"hammer","sets":[{"kg":"","reps":"10","done":true},{"kg":"","reps":"10","done":true},{"kg":"","reps":"10","done":true}],"note":""}],"duration":60,"volume":4684,"sets":22,"prs":[],"preSession":{},"calories":420},{"id":4000000,"date":1759917600000,"presetKey":"bras épaule","type":"Bras épaule","exs":[{"id":"curl_db","sets":[{"kg":"10","reps":"12","done":true},{"kg":"10","reps":"12","done":true},{"kg":"10","reps":"12","done":true}],"note":""},{"id":"triceps_pushdown","sets":[{"kg":"6","reps":"12","done":true},{"kg":"6","reps":"12","done":true},{"kg":"6","reps":"12","done":true}],"note":""},{"id":"lat_raise","sets":[{"kg":"3","reps":"15","done":true},{"kg":"3","reps":"15","done":true},{"kg":"3","reps":"15","done":true}],"note":""}],"duration":60,"volume":711,"sets":9,"prs":[],"preSession":{},"calories":420},{"id":5000000,"date":1760090400000,"presetKey":"lower","type":"Lower","exs":[{"id":"lunges","sets":[{"kg":"8","reps":"24","done":true},{"kg":"8","reps":"24","done":true},{"kg":"8","reps":"24","done":true}],"note":""},{"id":"leg_curl_machine","sets":[{"kg":"39","reps":"8","done":true},{"kg":"39","reps":"8","done":true},{"kg":"39","reps":"8","done":true}],"note":""},{"id":"leg_ext","sets":[{"kg":"39","reps":"10","done":true},{"kg":"39","reps":"10","done":true},{"kg":"39","reps":"10","done":true}],"note":""},{"id":"lat_raise_cable","sets":[{"kg":"2","reps":"12","done":true},{"kg":"2","reps":"12","done":true},{"kg":"2","reps":"12","done":true}],"note":""},{"id":"hammer","sets":[{"kg":"12","reps":"10","done":true},{"kg":"12","reps":"10","done":true},{"kg":"12","reps":"10","done":true}],"note":""}],"duration":60,"volume":3114,"sets":15,"prs":[],"preSession":{},"calories":420},{"id":6000000,"date":1760349600000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"6","reps":"6","done":true},{"kg":"6","reps":"6","done":true},{"kg":"6","reps":"4","done":true}],"note":""},{"id":"machine_row","sets":[{"kg":"45","reps":"10","done":true},{"kg":"45","reps":"10","done":true},{"kg":"45","reps":"10","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"45","reps":"10","done":true},{"kg":"45","reps":"9","done":true},{"kg":"45","reps":"9","done":true}],"note":""},{"id":"dips_assisted","sets":[{"kg":"9","reps":"8","done":true},{"kg":"9","reps":"8","done":true}],"note":""},{"id":"machine_triceps","sets":[{"kg":"41","reps":"13","done":true},{"kg":"45","reps":"11","done":true},{"kg":"45","reps":"11","done":true}],"note":""},{"id":"triceps_pushdown_uni","sets":[{"kg":"4.6","reps":"9","done":true},{"kg":"4.6","reps":"9","done":true}],"note":""},{"id":"machine_biceps","sets":[{"kg":"27","reps":"8","done":true},{"kg":"27","reps":"8","done":true},{"kg":"27","reps":"8","done":true}],"note":""}],"duration":60,"volume":5104,"sets":19,"prs":[],"preSession":{},"calories":420},{"id":7000000,"date":1760522400000,"presetKey":"lower","type":"Lower","exs":[{"id":"squat","sets":[{"kg":"90","reps":"6","done":true},{"kg":"90","reps":"6","done":true},{"kg":"90","reps":"6","done":true}],"note":""},{"id":"lunges","sets":[{"kg":"9","reps":"20","done":true},{"kg":"9","reps":"20","done":true},{"kg":"9","reps":"20","done":true}],"note":""},{"id":"leg_curl_machine","sets":[{"kg":"45","reps":"7","done":true},{"kg":"39","reps":"8","done":true},{"kg":"39","reps":"8","done":true}],"note":""},{"id":"leg_ext","sets":[{"kg":"52","reps":"8","done":true},{"kg":"52","reps":"8","done":true},{"kg":"45","reps":"10","done":true}],"note":""},{"id":"lat_raise_cable","sets":[{"kg":"2","reps":"12","done":true},{"kg":"2","reps":"12","done":true},{"kg":"2","reps":"12","done":true}],"note":""},{"id":"hammer","sets":[{"kg":"12","reps":"9","done":true},{"kg":"12","reps":"9","done":true},{"kg":"12","reps":"9","done":true}],"note":""}],"duration":60,"volume":4777,"sets":18,"prs":[],"preSession":{},"calories":420},{"id":8000000,"date":1760695200000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"8","reps":"8","done":true},{"kg":"8","reps":"7","done":true},{"kg":"8","reps":"8","done":true}],"note":""},{"id":"machine_row","sets":[{"kg":"45","reps":"9","done":true},{"kg":"45","reps":"9","done":true},{"kg":"45","reps":"9","done":true}],"note":""},{"id":"lat_pull","sets":[{"kg":"52","reps":"7","done":true},{"kg":"52","reps":"7","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"52","reps":"8","done":true},{"kg":"52","reps":"8","done":true},{"kg":"52","reps":"8","done":true}],"note":""},{"id":"dips_assisted","sets":[{"kg":"9","reps":"9","done":true},{"kg":"9","reps":"8","done":true},{"kg":"9","reps":"8","done":true}],"note":""},{"id":"machine_triceps","sets":[{"kg":"45","reps":"11","done":true},{"kg":"45","reps":"11","done":true}],"note":""},{"id":"triceps_pushdown_uni","sets":[{"kg":"4.6","reps":"9","done":true},{"kg":"4.6","reps":"9","done":true}],"note":""},{"id":"machine_biceps","sets":[{"kg":"32","reps":"8","done":true},{"kg":"32","reps":"8","done":true},{"kg":"27","reps":"8","done":true},{"kg":"27","reps":"8","done":true}],"note":""}],"duration":60,"volume":5617,"sets":22,"prs":[],"preSession":{},"calories":420},{"id":9000000,"date":1760954400000,"presetKey":"lower","type":"Lower","exs":[{"id":"squat_smith","sets":[{"kg":"40","reps":"8","done":true},{"kg":"40","reps":"8","done":true},{"kg":"40","reps":"8","done":true}],"note":""},{"id":"lunges","sets":[{"kg":"10","reps":"18","done":true},{"kg":"10","reps":"18","done":true},{"kg":"10","reps":"18","done":true}],"note":""},{"id":"leg_curl_machine","sets":[{"kg":"39","reps":"8","done":true},{"kg":"39","reps":"8","done":true},{"kg":"39","reps":"8","done":true}],"note":""},{"id":"leg_ext","sets":[{"kg":"52","reps":"9","done":true},{"kg":"52","reps":"9","done":true},{"kg":"45","reps":"10","done":true}],"note":""},{"id":"lat_raise_cable","sets":[{"kg":"4","reps":"12","done":true},{"kg":"4","reps":"12","done":true},{"kg":"4","reps":"12","done":true}],"note":""},{"id":"hammer","sets":[{"kg":"12","reps":"9","done":true},{"kg":"12","reps":"9","done":true},{"kg":"12","reps":"9","done":true}],"note":""}],"duration":60,"volume":4290,"sets":18,"prs":[],"preSession":{},"calories":420},{"id":10000000,"date":1761127200000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"8","reps":"5","done":true},{"kg":"8","reps":"4","done":true}],"note":""},{"id":"pullup","sets":[{"kg":"","reps":"10","done":true},{"kg":"","reps":"8","done":true}],"note":""},{"id":"machine_row","sets":[{"kg":"45","reps":"9","done":true},{"kg":"45","reps":"9","done":true},{"kg":"45","reps":"9","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"52","reps":"8","done":true},{"kg":"52","reps":"8","done":true},{"kg":"52","reps":"8","done":true}],"note":""},{"id":"rear_delt_machine","sets":[{"kg":"39","reps":"9","done":true},{"kg":"39","reps":"9","done":true},{"kg":"39","reps":"9","done":true}],"note":""},{"id":"dips_assisted","sets":[{"kg":"4","reps":"9","done":true},{"kg":"4","reps":"10","done":true},{"kg":"4","reps":"10","done":true}],"note":""},{"id":"machine_triceps","sets":[{"kg":"45","reps":"11","done":true},{"kg":"45","reps":"11","done":true},{"kg":"45","reps":"11","done":true}],"note":""},{"id":"machine_biceps","sets":[{"kg":"32","reps":"8","done":true},{"kg":"32","reps":"8","done":true}],"note":""}],"duration":60,"volume":5701,"sets":21,"prs":[],"preSession":{},"calories":420},{"id":11000000,"date":1761300000000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"8","reps":"6","done":true},{"kg":"8","reps":"5","done":true}],"note":""},{"id":"pullup","sets":[{"kg":"","reps":"9","done":true}],"note":""},{"id":"machine_row","sets":[{"kg":"66","reps":"8","done":true},{"kg":"66","reps":"8","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"52","reps":"8","done":true},{"kg":"52","reps":"8","done":true},{"kg":"52","reps":"8","done":true}],"note":""},{"id":"rear_delt_machine","sets":[{"kg":"45","reps":"11","done":true},{"kg":"45","reps":"11","done":true},{"kg":"45","reps":"11","done":true}],"note":""},{"id":"dips_assisted","sets":[{"kg":"4.5","reps":"9","done":true},{"kg":"4.5","reps":"9","done":true}],"note":""},{"id":"machine_triceps","sets":[{"kg":"45","reps":"10","done":true},{"kg":"45","reps":"10","done":true}],"note":""},{"id":"machine_biceps","sets":[{"kg":"27","reps":"10","done":true},{"kg":"27","reps":"10","done":true},{"kg":"27","reps":"10","done":true}],"note":""}],"duration":60,"volume":5668,"sets":18,"prs":[],"preSession":{},"calories":420},{"id":12000000,"date":1761559200000,"presetKey":"lower","type":"Lower","exs":[{"id":"leg_ext","sets":[{"kg":"52","reps":"10","done":true},{"kg":"52","reps":"10","done":true},{"kg":"52","reps":"10","done":true}],"note":""},{"id":"leg_curl_machine","sets":[{"kg":"39","reps":"8","done":true},{"kg":"39","reps":"8","done":true},{"kg":"39","reps":"8","done":true}],"note":""},{"id":"lunges","sets":[{"kg":"10","reps":"20","done":true},{"kg":"10","reps":"20","done":true},{"kg":"10","reps":"20","done":true}],"note":""},{"id":"lat_raise_cable","sets":[{"kg":"3.5","reps":"12","done":true},{"kg":"3.5","reps":"12","done":true},{"kg":"3.5","reps":"12","done":true}],"note":""},{"id":"hammer","sets":[{"kg":"12","reps":"10","done":true},{"kg":"12","reps":"10","done":true},{"kg":"12","reps":"10","done":true}],"note":""}],"duration":60,"volume":3582,"sets":15,"prs":[],"preSession":{},"calories":420},{"id":13000000,"date":1761732000000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"8","reps":"6","done":true},{"kg":"8","reps":"6","done":true},{"kg":"8","reps":"6","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"52","reps":"9","done":true},{"kg":"52","reps":"9","done":true},{"kg":"52","reps":"9","done":true}],"note":""},{"id":"machine_triceps","sets":[{"kg":"45","reps":"10","done":true},{"kg":"45","reps":"10","done":true},{"kg":"45","reps":"10","done":true}],"note":""},{"id":"machine_biceps","sets":[{"kg":"27","reps":"10","done":true},{"kg":"27","reps":"10","done":true},{"kg":"27","reps":"10","done":true}],"note":""}],"duration":60,"volume":3708,"sets":12,"prs":[],"preSession":{},"calories":420},{"id":14000000,"date":1761904800000,"presetKey":"lower","type":"Lower","exs":[{"id":"leg_ext","sets":[{"kg":"52","reps":"10","done":true},{"kg":"52","reps":"10","done":true},{"kg":"52","reps":"10","done":true}],"note":""},{"id":"leg_curl_machine","sets":[{"kg":"39","reps":"8","done":true},{"kg":"39","reps":"8","done":true},{"kg":"39","reps":"8","done":true}],"note":""},{"id":"lunges","sets":[{"kg":"10","reps":"20","done":true},{"kg":"10","reps":"20","done":true},{"kg":"10","reps":"20","done":true}],"note":""},{"id":"lat_raise_cable","sets":[{"kg":"3.5","reps":"12","done":true},{"kg":"3.5","reps":"12","done":true},{"kg":"3.5","reps":"12","done":true}],"note":""}],"duration":60,"volume":3222,"sets":12,"prs":[],"preSession":{},"calories":420},{"id":15000000,"date":1762164000000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"8","reps":"7","done":true},{"kg":"8","reps":"5","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"52","reps":"8","done":true},{"kg":"52","reps":"8","done":true},{"kg":"52","reps":"8","done":true}],"note":""},{"id":"machine_triceps","sets":[{"kg":"45","reps":"10","done":true},{"kg":"45","reps":"10","done":true},{"kg":"45","reps":"10","done":true}],"note":""},{"id":"machine_biceps","sets":[{"kg":"27","reps":"10","done":true},{"kg":"27","reps":"10","done":true},{"kg":"27","reps":"10","done":true}],"note":""}],"duration":60,"volume":3504,"sets":11,"prs":[],"preSession":{},"calories":420},{"id":16000000,"date":1762336800000,"presetKey":"lower","type":"Lower","exs":[{"id":"lunges","sets":[{"kg":"8","reps":"20","done":true},{"kg":"8","reps":"20","done":true},{"kg":"8","reps":"20","done":true}],"note":""},{"id":"leg_curl_machine","sets":[{"kg":"52","reps":"8","done":true},{"kg":"52","reps":"8","done":true}],"note":""},{"id":"leg_curl_lying","sets":[{"kg":"36","reps":"7","done":true},{"kg":"36","reps":"7","done":true}],"note":""},{"id":"lat_raise_cable","sets":[{"kg":"4.5","reps":"10","done":true},{"kg":"4.5","reps":"10","done":true},{"kg":"3.5","reps":"12","done":true},{"kg":"3.5","reps":"12","done":true}],"note":""},{"id":"rear_delt_machine","sets":[{"kg":"18","reps":"15","done":true},{"kg":"18","reps":"15","done":true}],"note":""},{"id":"triceps_pushdown_uni","sets":[{"kg":"6.8","reps":"10","done":true},{"kg":"6.8","reps":"10","done":true}],"note":""}],"duration":60,"volume":2666,"sets":15,"prs":[],"preSession":{},"calories":420},{"id":17000000,"date":1762509600000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"8","reps":"6","done":true},{"kg":"8","reps":"6","done":true},{"kg":"8","reps":"5","done":true}],"note":""},{"id":"lat_pull","sets":[{"kg":"59","reps":"9","done":true},{"kg":"59","reps":"9","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"59","reps":"8","done":true},{"kg":"59","reps":"8","done":true},{"kg":"52","reps":"9","done":true}],"note":""},{"id":"triceps_pushdown_uni","sets":[{"kg":"6.8","reps":"8","done":true},{"kg":"6.8","reps":"8","done":true},{"kg":"4.5","reps":"10","done":true}],"note":""},{"id":"pullup_supine","sets":[{"kg":"","reps":"6","done":true},{"kg":"","reps":"6","done":true},{"kg":"","reps":"6","done":true}],"note":""},{"id":"dips","sets":[{"kg":"","reps":"10","done":true},{"kg":"","reps":"10","done":true},{"kg":"","reps":"10","done":true}],"note":""}],"duration":60,"volume":2764,"sets":17,"prs":[],"preSession":{},"calories":420},{"id":18000000,"date":1762768800000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"8","reps":"8","done":true},{"kg":"8","reps":"8","done":true},{"kg":"8","reps":"7","done":true}],"note":""},{"id":"pullup_supine","sets":[{"kg":"","reps":"8","done":true},{"kg":"","reps":"8","done":true},{"kg":"","reps":"8","done":true}],"note":""},{"id":"dips","sets":[{"kg":"","reps":"10","done":true},{"kg":"","reps":"10","done":true},{"kg":"","reps":"10","done":true}],"note":""},{"id":"machine_triceps","sets":[{"kg":"50","reps":"6","done":true},{"kg":"50","reps":"6","done":true},{"kg":"45","reps":"11","done":true}],"note":""},{"id":"triceps_pushdown_uni","sets":[{"kg":"4","reps":"11","done":true},{"kg":"4","reps":"11","done":true}],"note":""},{"id":"curl_ez","sets":[{"kg":"20","reps":"11","done":true},{"kg":"20","reps":"11","done":true},{"kg":"20","reps":"8","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"59","reps":"9","done":true},{"kg":"59","reps":"9","done":true},{"kg":"59","reps":"8","done":true}],"note":""}],"duration":60,"volume":3501,"sets":20,"prs":[],"preSession":{},"calories":420},{"id":19000000,"date":1762941600000,"presetKey":"lower","type":"Lower","exs":[{"id":"lunges","sets":[{"kg":"14","reps":"18","done":true},{"kg":"14","reps":"18","done":true},{"kg":"14","reps":"18","done":true}],"note":""},{"id":"leg_curl_machine","sets":[{"kg":"52","reps":"8","done":true},{"kg":"52","reps":"8","done":true}],"note":""},{"id":"leg_curl_lying","sets":[{"kg":"36","reps":"8","done":true},{"kg":"36","reps":"8","done":true}],"note":""},{"id":"leg_ext","sets":[{"kg":"59","reps":"11","done":true},{"kg":"59","reps":"10","done":true},{"kg":"52","reps":"10","done":true}],"note":""},{"id":"hammer","sets":[{"kg":"14","reps":"20","done":true},{"kg":"14","reps":"18","done":true},{"kg":"14","reps":"16","done":true}],"note":""},{"id":"lat_raise_cable","sets":[{"kg":"3.5","reps":"13","done":true},{"kg":"3.5","reps":"13","done":true},{"kg":"3.5","reps":"13","done":true}],"note":""},{"id":"face_pull","sets":[{"kg":"20.3","reps":"12","done":true},{"kg":"20.3","reps":"12","done":true},{"kg":"20.3","reps":"12","done":true}],"note":""},{"id":"triceps_pushdown_uni","sets":[{"kg":"6.8","reps":"12","done":true},{"kg":"6.8","reps":"12","done":true}],"note":""}],"duration":60,"volume":5710,"sets":21,"prs":[],"preSession":{},"calories":420},{"id":20000000,"date":1763114400000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"10","reps":"5","done":true},{"kg":"10","reps":"5","done":true}],"note":""},{"id":"pullup","sets":[{"kg":"","reps":"8","done":true}],"note":""},{"id":"lat_pull","sets":[{"kg":"66","reps":"9","done":true},{"kg":"66","reps":"9","done":true}],"note":""},{"id":"dips_weighted","sets":[{"kg":"6","reps":"12","done":true},{"kg":"6","reps":"12","done":true},{"kg":"6","reps":"11","done":true}],"note":""},{"id":"machine_triceps","sets":[{"kg":"50","reps":"7","done":true},{"kg":"50","reps":"7","done":true}],"note":""},{"id":"triceps_pushdown_uni","sets":[{"kg":"4","reps":"11","done":true},{"kg":"4","reps":"11","done":true}],"note":""},{"id":"pullup_supine","sets":[{"kg":"","reps":"8","done":true},{"kg":"","reps":"8","done":true},{"kg":"","reps":"8","done":true}],"note":""},{"id":"curl_ez","sets":[{"kg":"20","reps":"11","done":true},{"kg":"20","reps":"11","done":true},{"kg":"20","reps":"8","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"59","reps":"9","done":true},{"kg":"59","reps":"9","done":true},{"kg":"59","reps":"8","done":true}],"note":""}],"duration":60,"volume":4420,"sets":21,"prs":[],"preSession":{},"calories":420},{"id":21000000,"date":1763373600000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"10","reps":"4","done":true},{"kg":"10","reps":"4","done":true},{"kg":"10","reps":"4","done":true}],"note":""},{"id":"pullup","sets":[{"kg":"","reps":"8","done":true}],"note":""},{"id":"lat_pull_uni","sets":[{"kg":"52","reps":"9","done":true},{"kg":"52","reps":"9","done":true}],"note":""},{"id":"dips_weighted","sets":[{"kg":"8","reps":"10","done":true},{"kg":"8","reps":"11","done":true},{"kg":"8","reps":"10","done":true}],"note":""},{"id":"triceps_pushdown_uni","sets":[{"kg":"5.5","reps":"11","done":true},{"kg":"5.5","reps":"11","done":true},{"kg":"5.5","reps":"10","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"59","reps":"11","done":true},{"kg":"59","reps":"11","done":true}],"note":""},{"id":"pullup_supine","sets":[{"kg":"","reps":"8","done":true},{"kg":"","reps":"8","done":true},{"kg":"","reps":"8","done":true}],"note":""},{"id":"curl_ez","sets":[{"kg":"20","reps":"11","done":true},{"kg":"20","reps":"11","done":true},{"kg":"20","reps":"8","done":true}],"note":""}],"duration":60,"volume":3378,"sets":20,"prs":[],"preSession":{},"calories":420},{"id":22000000,"date":1763546400000,"presetKey":"lower","type":"Lower","exs":[{"id":"leg_ext","sets":[{"kg":"59","reps":"10","done":true},{"kg":"59","reps":"10","done":true},{"kg":"59","reps":"10","done":true}],"note":""},{"id":"leg_curl_machine","sets":[{"kg":"52","reps":"8","done":true},{"kg":"52","reps":"8","done":true},{"kg":"52","reps":"8","done":true}],"note":""},{"id":"lunges","sets":[{"kg":"10","reps":"20","done":true},{"kg":"10","reps":"20","done":true},{"kg":"10","reps":"20","done":true}],"note":""},{"id":"lat_raise_cable","sets":[{"kg":"3.5","reps":"12","done":true},{"kg":"3.5","reps":"12","done":true},{"kg":"3.5","reps":"12","done":true}],"note":""},{"id":"hammer","sets":[{"kg":"12","reps":"10","done":true},{"kg":"12","reps":"10","done":true},{"kg":"12","reps":"10","done":true}],"note":""}],"duration":60,"volume":4104,"sets":15,"prs":[],"preSession":{},"calories":420},{"id":23000000,"date":1763719200000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"10","reps":"6","done":true},{"kg":"10","reps":"5","done":true}],"note":""},{"id":"pullup","sets":[{"kg":"","reps":"9","done":true}],"note":""},{"id":"lat_pull","sets":[{"kg":"66","reps":"9","done":true},{"kg":"66","reps":"9","done":true}],"note":""},{"id":"dips_weighted","sets":[{"kg":"10","reps":"11","done":true},{"kg":"10","reps":"11","done":true},{"kg":"10","reps":"10","done":true}],"note":""},{"id":"triceps_pushdown_uni","sets":[{"kg":"6.5","reps":"8","done":true},{"kg":"6.5","reps":"7","done":true},{"kg":"4.3","reps":"10","done":true}],"note":""},{"id":"machine_biceps","sets":[{"kg":"32","reps":"7","done":true},{"kg":"32","reps":"6","done":true},{"kg":"27","reps":"8","done":true}],"note":""}],"duration":60,"volume":2390,"sets":14,"prs":[],"preSession":{},"calories":420},{"id":24000000,"date":1763978400000,"presetKey":"lower","type":"Lower","exs":[{"id":"leg_ext","sets":[{"kg":"59","reps":"12","done":true},{"kg":"59","reps":"12","done":true},{"kg":"59","reps":"11","done":true}],"note":""},{"id":"leg_curl_machine","sets":[{"kg":"52","reps":"9","done":true},{"kg":"52","reps":"9","done":true}],"note":""},{"id":"leg_curl_lying","sets":[{"kg":"36","reps":"9","done":true},{"kg":"36","reps":"8","done":true}],"note":""},{"id":"lat_raise_cable","sets":[{"kg":"3.5","reps":"20","done":true},{"kg":"3.5","reps":"15","done":true},{"kg":"3.5","reps":"15","done":true}],"note":""},{"id":"face_pull","sets":[{"kg":"18","reps":"12","done":true},{"kg":"18","reps":"11","done":true},{"kg":"18","reps":"11","done":true}],"note":""}],"duration":60,"volume":4400,"sets":13,"prs":[],"preSession":{},"calories":420},{"id":25000000,"date":1764151200000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"8","reps":"8","done":true},{"kg":"8","reps":"6","done":true}],"note":""},{"id":"lat_pull","sets":[{"kg":"66","reps":"10","done":true},{"kg":"66","reps":"9","done":true}],"note":""},{"id":"dips_weighted","sets":[{"kg":"12","reps":"12","done":true},{"kg":"12","reps":"10","done":true},{"kg":"12","reps":"9","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"59","reps":"8","done":true},{"kg":"59","reps":"7","done":true}],"note":""},{"id":"triceps_pushdown_uni","sets":[{"kg":"5.5","reps":"12","done":true},{"kg":"5.5","reps":"10","done":true},{"kg":"5.5","reps":"10","done":true}],"note":""},{"id":"machine_triceps","sets":[{"kg":"54","reps":"11","done":true},{"kg":"54","reps":"10","done":true},{"kg":"54","reps":"10","done":true}],"note":""},{"id":"machine_biceps","sets":[{"kg":"32","reps":"8","done":true},{"kg":"32","reps":"8","done":true}],"note":""}],"duration":60,"volume":4985,"sets":17,"prs":[],"preSession":{},"calories":420},{"id":26000000,"date":1764324000000,"presetKey":"lower","type":"Lower","exs":[{"id":"leg_ext_uni","sets":[{"kg":"32","reps":"10","done":true},{"kg":"32","reps":"10","done":true},{"kg":"32","reps":"9","done":true}],"note":""},{"id":"leg_curl","sets":[{"kg":"36","reps":"10","done":true},{"kg":"36","reps":"10","done":true},{"kg":"36","reps":"9","done":true}],"note":""},{"id":"lunges","sets":[{"kg":"12","reps":"24","done":true},{"kg":"12","reps":"24","done":true},{"kg":"12","reps":"24","done":true}],"note":""}],"duration":60,"volume":2836,"sets":9,"prs":[],"preSession":{},"calories":420},{"id":27000000,"date":1764583200000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"10","reps":"6","done":true},{"kg":"10","reps":"5","done":true},{"kg":"10","reps":"4","done":true}],"note":""},{"id":"pullup","sets":[{"kg":"","reps":"10","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"59","reps":"10","done":true},{"kg":"59","reps":"9","done":true},{"kg":"59","reps":"9","done":true}],"note":""},{"id":"triceps_pushdown_uni","sets":[{"kg":"6.8","reps":"12","done":true},{"kg":"6.8","reps":"11","done":true},{"kg":"5.5","reps":"10","done":true}],"note":""},{"id":"rear_delt_machine","sets":[{"kg":"45","reps":"13","done":true},{"kg":"45","reps":"12","done":true},{"kg":"45","reps":"12","done":true}],"note":""},{"id":"pullup_supine","sets":[{"kg":"","reps":"6","done":true},{"kg":"","reps":"6","done":true},{"kg":"","reps":"5","done":true}],"note":""},{"id":"curl_ez","sets":[{"kg":"20","reps":"8","done":true},{"kg":"20","reps":"8","done":true},{"kg":"20","reps":"7","done":true}],"note":""},{"id":"machine_triceps","sets":[{"kg":"50","reps":"12","done":true},{"kg":"50","reps":"12","done":true},{"kg":"50","reps":"11","done":true}],"note":""}],"duration":60,"volume":5888,"sets":22,"prs":[],"preSession":{},"calories":420},{"id":28000000,"date":1764756000000,"presetKey":"lower","type":"Lower","exs":[{"id":"leg_ext_uni","sets":[{"kg":"32","reps":"11","done":true},{"kg":"32","reps":"10","done":true},{"kg":"32","reps":"10","done":true}],"note":""},{"id":"leg_ext","sets":[{"kg":"59","reps":"11","done":true}],"note":""},{"id":"leg_curl_lying","sets":[{"kg":"41","reps":"9","done":true},{"kg":"41","reps":"9","done":true},{"kg":"41","reps":"9","done":true}],"note":""},{"id":"lat_raise_cable","sets":[{"kg":"4.8","reps":"12","done":true},{"kg":"4.8","reps":"12","done":true},{"kg":"3.5","reps":"15","done":true},{"kg":"3.5","reps":"15","done":true}],"note":""},{"id":"hammer","sets":[{"kg":"12","reps":"24","done":true},{"kg":"12","reps":"24","done":true},{"kg":"12","reps":"24","done":true}],"note":""},{"id":"face_pull","sets":[{"kg":"18","reps":"15","done":true},{"kg":"18","reps":"15","done":true},{"kg":"18","reps":"15","done":true}],"note":""}],"duration":60,"volume":4642,"sets":17,"prs":[],"preSession":{},"calories":420},{"id":29000000,"date":1764928800000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"10","reps":"7","done":true},{"kg":"10","reps":"6","done":true},{"kg":"10","reps":"5","done":true}],"note":""},{"id":"dips_weighted","sets":[{"kg":"15","reps":"12","done":true},{"kg":"15","reps":"11","done":true},{"kg":"10","reps":"11","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"66","reps":"7","done":true},{"kg":"59","reps":"9","done":true}],"note":""},{"id":"triceps_pushdown_uni","sets":[{"kg":"6.8","reps":"9","done":true},{"kg":"6.8","reps":"9","done":true},{"kg":"5.5","reps":"10","done":true}],"note":""},{"id":"pullup_supine","sets":[{"kg":"","reps":"7","done":true},{"kg":"","reps":"7","done":true}],"note":""},{"id":"curl_ez","sets":[{"kg":"20","reps":"9","done":true},{"kg":"20","reps":"8","done":true}],"note":""},{"id":"rear_delt_machine","sets":[{"kg":"52","reps":"10","done":true},{"kg":"52","reps":"10","done":true},{"kg":"52","reps":"10","done":true}],"note":""},{"id":"machine_triceps","sets":[{"kg":"50","reps":"12","done":true},{"kg":"50","reps":"12","done":true},{"kg":"50","reps":"11","done":true}],"note":""}],"duration":60,"volume":5455,"sets":21,"prs":[],"preSession":{},"calories":420},{"id":30000000,"date":1765188000000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"10","reps":"8","done":true},{"kg":"10","reps":"6","done":true},{"kg":"10","reps":"6","done":true}],"note":""},{"id":"dips_weighted","sets":[{"kg":"15","reps":"13","done":true},{"kg":"15","reps":"12","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"66","reps":"9","done":true},{"kg":"66","reps":"8","done":true},{"kg":"66","reps":"8","done":true}],"note":""},{"id":"rear_delt_machine","sets":[{"kg":"52","reps":"11","done":true},{"kg":"52","reps":"10","done":true},{"kg":"52","reps":"10","done":true}],"note":""},{"id":"triceps_pushdown_uni","sets":[{"kg":"6.8","reps":"9","done":true},{"kg":"6.8","reps":"9","done":true}],"note":""},{"id":"machine_triceps","sets":[{"kg":"50","reps":"12","done":true},{"kg":"50","reps":"12","done":true},{"kg":"50","reps":"11","done":true}],"note":""},{"id":"machine_biceps","sets":[{"kg":"32","reps":"8","done":true},{"kg":"32","reps":"8","done":true},{"kg":"32","reps":"8","done":true}],"note":""}],"duration":60,"volume":6477,"sets":19,"prs":[],"preSession":{},"calories":420},{"id":31000000,"date":1765360800000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"15","reps":"4","done":true},{"kg":"15","reps":"4","done":true},{"kg":"15","reps":"3","done":true}],"note":""},{"id":"dips_weighted","sets":[{"kg":"15","reps":"13","done":true},{"kg":"15","reps":"11","done":true},{"kg":"15","reps":"11","done":true}],"note":""},{"id":"curl_ez","sets":[{"kg":"20","reps":"13","done":true},{"kg":"20","reps":"13","done":true},{"kg":"20","reps":"12","done":true}],"note":""},{"id":"triceps_pushdown_uni","sets":[{"kg":"6.8","reps":"11","done":true},{"kg":"6.8","reps":"10","done":true},{"kg":"6.8","reps":"8","done":true}],"note":""},{"id":"face_pull","sets":[{"kg":"20","reps":"11","done":true},{"kg":"20","reps":"11","done":true},{"kg":"20","reps":"11","done":true}],"note":""}],"duration":60,"volume":2307,"sets":15,"prs":[],"preSession":{},"calories":420},{"id":32000000,"date":1765533600000,"presetKey":"lower","type":"Lower","exs":[{"id":"pullup_weighted","sets":[{"kg":"15","reps":"4","done":true},{"kg":"15","reps":"4","done":true},{"kg":"10","reps":"6","done":true},{"kg":"10","reps":"5","done":true}],"note":""},{"id":"dips_weighted","sets":[{"kg":"15","reps":"11","done":true},{"kg":"15","reps":"11","done":true}],"note":""},{"id":"triceps_pushdown_uni","sets":[{"kg":"5.5","reps":"15","done":true},{"kg":"5.5","reps":"12","done":true},{"kg":"5.5","reps":"12","done":true}],"note":""}],"duration":60,"volume":774,"sets":9,"prs":[],"preSession":{},"calories":420},{"id":33000000,"date":1765792800000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"15","reps":"5","done":true},{"kg":"15","reps":"4","done":true},{"kg":"10","reps":"6","done":true}],"note":""},{"id":"pullup","sets":[{"kg":"","reps":"10","done":true}],"note":""},{"id":"dips_weighted","sets":[{"kg":"10","reps":"15","done":true},{"kg":"10","reps":"12","done":true},{"kg":"10","reps":"11","done":true},{"kg":"10","reps":"6","done":true}],"note":""},{"id":"triceps_pushdown_uni","sets":[{"kg":"6.8","reps":"10","done":true},{"kg":"6.8","reps":"8","done":true},{"kg":"6.8","reps":"8","done":true},{"kg":"5.5","reps":"10","done":true}],"note":""},{"id":"face_pull","sets":[{"kg":"20.3","reps":"12","done":true},{"kg":"20.3","reps":"12","done":true},{"kg":"20.3","reps":"12","done":true}],"note":""},{"id":"abs_cable","sets":[{"kg":"29","reps":"6","done":true},{"kg":"29","reps":"8","done":true},{"kg":"29","reps":"8","done":true}],"note":""},{"id":"curl_ez","sets":[{"kg":"","reps":"8","done":true},{"kg":"","reps":"8","done":true},{"kg":"","reps":"8","done":true}],"note":""}],"duration":60,"volume":2236,"sets":21,"prs":[],"preSession":{},"calories":420},{"id":34000000,"date":1765965600000,"presetKey":"push","type":"Push","exs":[{"id":"dips_weighted","sets":[{"kg":"15","reps":"14","done":true},{"kg":"15","reps":"10","done":true},{"kg":"10","reps":"6","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"59","reps":"11","done":true},{"kg":"59","reps":"10","done":true},{"kg":"59","reps":"9","done":true}],"note":""},{"id":"triceps_pushdown","sets":[{"kg":"6.8","reps":"12","done":true},{"kg":"6.8","reps":"10","done":true},{"kg":"6.8","reps":"10","done":true}],"note":""},{"id":"machine_triceps","sets":[{"kg":"55","reps":"10","done":true},{"kg":"55","reps":"10","done":true},{"kg":"55","reps":"10","done":true}],"note":""},{"id":"face_pull","sets":[{"kg":"20.3","reps":"12","done":true},{"kg":"20.3","reps":"12","done":true},{"kg":"20.3","reps":"12","done":true}],"note":""}],"duration":60,"volume":4788,"sets":15,"prs":[],"preSession":{},"calories":420},{"id":35000000,"date":1766138400000,"presetKey":"pull","type":"Pull","exs":[{"id":"pullup_weighted","sets":[{"kg":"15","reps":"4","done":true},{"kg":"15","reps":"4","done":true}],"note":""},{"id":"pullup","sets":[{"kg":"","reps":"10","done":true}],"note":""},{"id":"lat_raise_cable","sets":[{"kg":"3.5","reps":"13","done":true},{"kg":"3.5","reps":"10","done":true},{"kg":"3.5","reps":"10","done":true},{"kg":"3.5","reps":"10","done":true}],"note":""},{"id":"machine_biceps","sets":[{"kg":"27","reps":"10","done":true},{"kg":"27","reps":"8","done":true},{"kg":"25","reps":"8","done":true}],"note":""},{"id":"lat_pull","sets":[{"kg":"66","reps":"9","done":true},{"kg":"66","reps":"8","done":true},{"kg":"59","reps":"10","done":true}],"note":""},{"id":"curl_ez","sets":[{"kg":"20","reps":"12","done":true},{"kg":"20","reps":"10","done":true}],"note":""},{"id":"abs_cable","sets":[{"kg":"27","reps":"12","done":true},{"kg":"27","reps":"10","done":true}],"note":""}],"duration":60,"volume":3702,"sets":17,"prs":[],"preSession":{},"calories":420},{"id":36000000,"date":1766397600000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"15","reps":"6","done":true},{"kg":"15","reps":"4","done":true},{"kg":"10","reps":"6","done":true}],"note":""},{"id":"pullup","sets":[{"kg":"","reps":"8","done":true}],"note":""},{"id":"dips_weighted","sets":[{"kg":"20","reps":"8","done":true},{"kg":"20","reps":"7","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"66","reps":"8","done":true},{"kg":"66","reps":"7","done":true},{"kg":"59","reps":"8","done":true}],"note":""},{"id":"triceps_pushdown_uni","sets":[{"kg":"6.8","reps":"13","done":true},{"kg":"6.8","reps":"10","done":true},{"kg":"5.5","reps":"11","done":true}],"note":""},{"id":"machine_triceps","sets":[{"kg":"","reps":"11","done":true},{"kg":"","reps":"10","done":true}],"note":""},{"id":"curl_bar","sets":[{"kg":"25","reps":"8","done":true},{"kg":"25","reps":"7","done":true}],"note":""}],"duration":60,"volume":2564,"sets":16,"prs":[],"preSession":{},"calories":420},{"id":37000000,"date":1766570400000,"presetKey":"full body","type":"Full body","exs":[{"id":"pullup_weighted","sets":[{"kg":"15","reps":"6","done":true},{"kg":"15","reps":"5","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"66","reps":"12","done":true},{"kg":"66","reps":"10","done":true}],"note":""},{"id":"triceps_pushdown_uni","sets":[{"kg":"8","reps":"10","done":true},{"kg":"8","reps":"9","done":true}],"note":""},{"id":"curl_bar","sets":[{"kg":"25","reps":"9","done":true},{"kg":"25","reps":"8","done":true},{"kg":"20","reps":"10","done":true}],"note":""}],"duration":60,"volume":2394,"sets":9,"prs":[],"preSession":{},"calories":420},{"id":38000000,"date":1766743200000,"presetKey":"push","type":"Push","exs":[{"id":"dips_weighted","sets":[{"kg":"20","reps":"9","done":true},{"kg":"20","reps":"7","done":true},{"kg":"10","reps":"8","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"73","reps":"10","done":true},{"kg":"73","reps":"8","done":true},{"kg":"73","reps":"7","done":true}],"note":""},{"id":"pullup_supine","sets":[{"kg":"","reps":"6","done":true}],"note":""},{"id":"curl_bar","sets":[{"kg":"20","reps":"9","done":true}],"note":""},{"id":"curl_db","sets":[{"kg":"12","reps":"14","done":true},{"kg":"12","reps":"12","done":true}],"note":""},{"id":"rear_delt_machine","sets":[{"kg":"52","reps":"12","done":true},{"kg":"52","reps":"10","done":true},{"kg":"52","reps":"10","done":true},{"kg":"52","reps":"10","done":true}],"note":""}],"duration":60,"volume":4901,"sets":14,"prs":[],"preSession":{},"calories":420},{"id":39000000,"date":1767002400000,"presetKey":"lower","type":"Lower","exs":[{"id":"leg_curl","sets":[{"kg":"52","reps":"10","done":true},{"kg":"52","reps":"9","done":true},{"kg":"52","reps":"8","done":true},{"kg":"45","reps":"9","done":true}],"note":""},{"id":"leg_ext","sets":[{"kg":"73","reps":"10","done":true},{"kg":"73","reps":"9","done":true},{"kg":"66","reps":"12","done":true},{"kg":"66","reps":"12","done":true}],"note":""},{"id":"rdl","sets":[{"kg":"30","reps":"10","done":true},{"kg":"30","reps":"10","done":true}],"note":""},{"id":"lat_raise_cable","sets":[{"kg":"3.5","reps":"12","done":true},{"kg":"3.5","reps":"10","done":true},{"kg":"3.5","reps":"10","done":true}],"note":""},{"id":"leg_press_uni","sets":[{"kg":"29","reps":"8","done":true},{"kg":"29","reps":"8","done":true}],"note":""}],"duration":60,"volume":5956,"sets":15,"prs":[],"preSession":{},"calories":420},{"id":40000000,"date":1767175200000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"","reps":"6","done":true},{"kg":"","reps":"5","done":true}],"note":""},{"id":"lat_pull","sets":[{"kg":"52","reps":"10","done":true},{"kg":"52","reps":"10","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"73","reps":"11","done":true},{"kg":"73","reps":"8","done":true},{"kg":"66","reps":"9","done":true}],"note":""},{"id":"dips","sets":[{"kg":"","reps":"8","done":true},{"kg":"","reps":"8","done":true}],"note":""},{"id":"triceps_pushdown_uni","sets":[{"kg":"6.8","reps":"11","done":true},{"kg":"6.8","reps":"10","done":true},{"kg":"6.8","reps":"9","done":true}],"note":""},{"id":"curl_bar","sets":[{"kg":"25","reps":"10","done":true},{"kg":"25","reps":"9","done":true},{"kg":"20","reps":"14","done":true}],"note":""}],"duration":60,"volume":3980,"sets":15,"prs":[],"preSession":{},"calories":420},{"id":41000000,"date":1767348000000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"15","reps":"5","done":true},{"kg":"15","reps":"4","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"66","reps":"9","done":true},{"kg":"66","reps":"9","done":true},{"kg":"66","reps":"9","done":true}],"note":""},{"id":"machine_triceps","sets":[{"kg":"45","reps":"10","done":true},{"kg":"45","reps":"10","done":true},{"kg":"45","reps":"10","done":true}],"note":""},{"id":"machine_biceps","sets":[{"kg":"27","reps":"10","done":true},{"kg":"27","reps":"10","done":true},{"kg":"27","reps":"10","done":true}],"note":""}],"duration":60,"volume":4077,"sets":11,"prs":[],"preSession":{},"calories":420},{"id":42000000,"date":1767607200000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"15","reps":"5","done":true},{"kg":"15","reps":"4","done":true},{"kg":"5","reps":"8","done":true}],"note":""},{"id":"lat_pull","sets":[{"kg":"52","reps":"8","done":true},{"kg":"52","reps":"8","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"45","reps":"10","done":true},{"kg":"45","reps":"9","done":true},{"kg":"45","reps":"8","done":true}],"note":""},{"id":"dips","sets":[{"kg":"","reps":"12","done":true},{"kg":"","reps":"12","done":true}],"note":""}],"duration":60,"volume":2222,"sets":10,"prs":[],"preSession":{},"calories":420},{"id":43000000,"date":1767780000000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"15","reps":"6","done":true},{"kg":"15","reps":"5","done":true}],"note":""},{"id":"pullup","sets":[{"kg":"","reps":"11","done":true},{"kg":"","reps":"10","done":true}],"note":""},{"id":"pec_fly_cable","sets":[{"kg":"9","reps":"8","done":true},{"kg":"9","reps":"8","done":true},{"kg":"9","reps":"8","done":true}],"note":""},{"id":"triceps_pushdown","sets":[{"kg":"6.8","reps":"12","done":true},{"kg":"6.8","reps":"11","done":true},{"kg":"6.8","reps":"11","done":true}],"note":""},{"id":"dips","sets":[{"kg":"","reps":"15","done":true},{"kg":"","reps":"15","done":true}],"note":""},{"id":"dips_assisted","sets":[{"kg":"4.3","reps":"12","done":true}],"note":""},{"id":"curl_cable_brachial","sets":[{"kg":"13.8","reps":"13","done":true},{"kg":"13.8","reps":"12","done":true},{"kg":"13.8","reps":"12","done":true}],"note":""}],"duration":60,"volume":1174,"sets":16,"prs":[],"preSession":{},"calories":420},{"id":44000000,"date":1767952800000,"presetKey":"lower","type":"Lower","exs":[{"id":"leg_curl_lying","sets":[{"kg":"36","reps":"10","done":true},{"kg":"36","reps":"9","done":true},{"kg":"36","reps":"8","done":true}],"note":""},{"id":"leg_ext","sets":[{"kg":"73","reps":"10","done":true},{"kg":"73","reps":"9","done":true}],"note":""},{"id":"leg_ext_uni","sets":[{"kg":"39","reps":"10","done":true}],"note":""},{"id":"rdl_db","sets":[{"kg":"18","reps":"10","done":true},{"kg":"18","reps":"10","done":true}],"note":""},{"id":"lat_raise_cable","sets":[{"kg":"3.5","reps":"12","done":true},{"kg":"3.5","reps":"10","done":true},{"kg":"3.5","reps":"10","done":true}],"note":""},{"id":"bulgarian_squat","sets":[{"kg":"","reps":"7","done":true},{"kg":"","reps":"7","done":true}],"note":""},{"id":"curl_cable_brachial","sets":[{"kg":"15.8","reps":"12","done":true},{"kg":"15.8","reps":"12","done":true}],"note":""}],"duration":60,"volume":3600,"sets":15,"prs":[],"preSession":{},"calories":420},{"id":45000000,"date":1768212000000,"presetKey":"upper","type":"Upper","exs":[{"id":"dips_weighted","sets":[{"kg":"8","reps":"18","done":true},{"kg":"8","reps":"17","done":true},{"kg":"8","reps":"9","done":true}],"note":""},{"id":"lat_pull","sets":[{"kg":"73","reps":"10","done":true},{"kg":"73","reps":"9","done":true},{"kg":"66","reps":"10","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"73","reps":"10","done":true},{"kg":"73","reps":"8","done":true}],"note":""},{"id":"triceps_pushdown","sets":[{"kg":"8","reps":"10","done":true},{"kg":"8","reps":"8","done":true},{"kg":"6.8","reps":"9","done":true}],"note":""},{"id":"triceps_overhead_cable","sets":[{"kg":"13.5","reps":"12","done":true},{"kg":"13.5","reps":"11","done":true}],"note":""},{"id":"pullup","sets":[{"kg":"","reps":"13","done":true},{"kg":"","reps":"10","done":true}],"note":""},{"id":"curl_bar","sets":[{"kg":"25","reps":"9","done":true},{"kg":"25","reps":"9","done":true},{"kg":"20","reps":"10","done":true}],"note":""}],"duration":60,"volume":4879,"sets":18,"prs":[],"preSession":{},"calories":420},{"id":46000000,"date":1768384800000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"","reps":"7","done":true},{"kg":"","reps":"4","done":true},{"kg":"10","reps":"6","done":true}],"note":""},{"id":"pullup","sets":[{"kg":"","reps":"8","done":true}],"note":""},{"id":"curl_db","sets":[{"kg":"12.5","reps":"11","done":true},{"kg":"12.5","reps":"11","done":true},{"kg":"12.5","reps":"10","done":true}],"note":""},{"id":"triceps_pushdown_uni","sets":[{"kg":"8","reps":"11","done":true},{"kg":"8","reps":"9","done":true},{"kg":"6.8","reps":"13","done":true}],"note":""},{"id":"hammer_cable","sets":[{"kg":"15.8","reps":"13","done":true},{"kg":"15.8","reps":"12","done":true},{"kg":"15.8","reps":"11","done":true}],"note":""}],"duration":60,"volume":1277,"sets":13,"prs":[],"preSession":{},"calories":420},{"id":47000000,"date":1768557600000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"14","reps":"8","done":true},{"kg":"14","reps":"6","done":true}],"note":""},{"id":"pullup","sets":[{"kg":"","reps":"15","done":true}],"note":""},{"id":"lat_pull","sets":[{"kg":"73","reps":"10","done":true},{"kg":"73","reps":"7","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"73","reps":"12","done":true},{"kg":"73","reps":"9","done":true},{"kg":"66","reps":"9","done":true}],"note":""},{"id":"dips_weighted","sets":[{"kg":"14","reps":"12","done":true},{"kg":"14","reps":"11","done":true}],"note":""},{"id":"triceps_pushdown_uni","sets":[{"kg":"8","reps":"10","done":true},{"kg":"8","reps":"8","done":true}],"note":""},{"id":"curl_bar","sets":[{"kg":"20","reps":"14","done":true},{"kg":"20","reps":"12","done":true}],"note":""},{"id":"triceps_overhead_cable","sets":[{"kg":"15.8","reps":"12","done":true},{"kg":"15.8","reps":"11","done":true}],"note":""},{"id":"face_pull","sets":[{"kg":"20.3","reps":"15","done":true},{"kg":"20.3","reps":"13","done":true},{"kg":"20.3","reps":"13","done":true}],"note":""}],"duration":60,"volume":5746,"sets":19,"prs":[],"preSession":{},"calories":420},{"id":48000000,"date":1768816800000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"10","reps":"7","done":true},{"kg":"10","reps":"6","done":true},{"kg":"10","reps":"6","done":true}],"note":""},{"id":"row_bar","sets":[{"kg":"40","reps":"12","done":true},{"kg":"40","reps":"11","done":true},{"kg":"40","reps":"10","done":true},{"kg":"40","reps":"15","done":true}],"note":""},{"id":"pullup","sets":[{"kg":"","reps":"10","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"73","reps":"12","done":true},{"kg":"66","reps":"10","done":true},{"kg":"66","reps":"8","done":true}],"note":""},{"id":"pec_deck","sets":[{"kg":"39","reps":"12","done":true},{"kg":"39","reps":"10","done":true}],"note":""},{"id":"triceps_pushdown","sets":[{"kg":"8","reps":"11","done":true},{"kg":"8","reps":"9","done":true},{"kg":"6.8","reps":"10","done":true},{"kg":"6.8","reps":"10","done":true}],"note":""},{"id":"curl_bar","sets":[{"kg":"20","reps":"14","done":true},{"kg":"20","reps":"12","done":true}],"note":""},{"id":"triceps_overhead_cable","sets":[{"kg":"15.8","reps":"15","done":true},{"kg":"15.8","reps":"14","done":true}],"note":""}],"duration":60,"volume":6306,"sets":21,"prs":[],"preSession":{},"calories":420},{"id":49000000,"date":1768989600000,"presetKey":"lower","type":"Lower","exs":[{"id":"leg_ext","sets":[{"kg":"73","reps":"11","done":true},{"kg":"73","reps":"9","done":true},{"kg":"73","reps":"8","done":true}],"note":""},{"id":"rdl","sets":[{"kg":"40","reps":"11","done":true},{"kg":"40","reps":"9","done":true}],"note":""},{"id":"leg_curl_lying","sets":[{"kg":"41","reps":"8","done":true},{"kg":"41","reps":"7","done":true},{"kg":"36","reps":"9","done":true}],"note":""},{"id":"lunges","sets":[{"kg":"10","reps":"20","done":true},{"kg":"10","reps":"20","done":true},{"kg":"10","reps":"20","done":true}],"note":""},{"id":"face_pull","sets":[{"kg":"20.3","reps":"15","done":true},{"kg":"20.3","reps":"10","done":true},{"kg":"20.3","reps":"10","done":true},{"kg":"20.3","reps":"10","done":true}],"note":""},{"id":"curl_cable_brachial","sets":[{"kg":"15.8","reps":"14","done":true},{"kg":"15.8","reps":"13","done":true}],"note":""}],"duration":60,"volume":5723,"sets":17,"prs":[],"preSession":{},"calories":420},{"id":50000000,"date":1769162400000,"presetKey":"upper","type":"Upper","exs":[{"id":"pec_fly","sets":[{"kg":"73","reps":"12","done":true},{"kg":"73","reps":"10","done":true},{"kg":"66","reps":"9","done":true}],"note":""},{"id":"pullup_weighted","sets":[{"kg":"10","reps":"8","done":true},{"kg":"10","reps":"6","done":true},{"kg":"10","reps":"5","done":true}],"note":""},{"id":"row_bar","sets":[{"kg":"45","reps":"9","done":true},{"kg":"45","reps":"9","done":true},{"kg":"45","reps":"8","done":true}],"note":""},{"id":"dips","sets":[{"kg":"","reps":"15","done":true},{"kg":"","reps":"15","done":true}],"note":""},{"id":"triceps_pushdown_uni","sets":[{"kg":"6.8","reps":"12","done":true},{"kg":"6.8","reps":"11","done":true},{"kg":"6.8","reps":"11","done":true}],"note":""},{"id":"curl_bar","sets":[{"kg":"25","reps":"11","done":true},{"kg":"25","reps":"11","done":true}],"note":""},{"id":"triceps_overhead_cable","sets":[{"kg":"18.3","reps":"12","done":true},{"kg":"18.3","reps":"10","done":true}],"note":""},{"id":"face_pull","sets":[{"kg":"20.3","reps":"15","done":true},{"kg":"20.3","reps":"14","done":true},{"kg":"20.3","reps":"13","done":true}],"note":""}],"duration":60,"volume":5596,"sets":21,"prs":[],"preSession":{},"calories":420},{"id":51000000,"date":1769421600000,"presetKey":"lower","type":"Lower","exs":[{"id":"leg_ext","sets":[{"kg":"73","reps":"11","done":true},{"kg":"73","reps":"9","done":true},{"kg":"73","reps":"8","done":true}],"note":""},{"id":"rdl","sets":[{"kg":"40","reps":"11","done":true},{"kg":"40","reps":"9","done":true}],"note":""},{"id":"leg_curl_lying","sets":[{"kg":"41","reps":"8","done":true},{"kg":"41","reps":"7","done":true}],"note":""},{"id":"lunges","sets":[{"kg":"10","reps":"20","done":true},{"kg":"10","reps":"20","done":true},{"kg":"10","reps":"20","done":true}],"note":""},{"id":"lat_raise_cable","sets":[{"kg":"3.5","reps":"12","done":true},{"kg":"3.5","reps":"10","done":true},{"kg":"3.5","reps":"10","done":true}],"note":""},{"id":"face_pull","sets":[{"kg":"20.3","reps":"15","done":true},{"kg":"20.3","reps":"13","done":true},{"kg":"20.3","reps":"13","done":true}],"note":""}],"duration":60,"volume":5003,"sets":16,"prs":[],"preSession":{},"calories":420},{"id":52000000,"date":1769594400000,"presetKey":"upper","type":"Upper","exs":[{"id":"pullup_weighted","sets":[{"kg":"14","reps":"8","done":true},{"kg":"14","reps":"6","done":true}],"note":""},{"id":"pullup","sets":[{"kg":"","reps":"12","done":true}],"note":""},{"id":"pec_fly","sets":[{"kg":"73","reps":"12","done":true},{"kg":"73","reps":"9","done":true},{"kg":"66","reps":"9","done":true}],"note":""},{"id":"dips_weighted","sets":[{"kg":"14","reps":"13","done":true},{"kg":"14","reps":"11","done":true}],"note":""},{"id":"triceps_pushdown_uni","sets":[{"kg":"8","reps":"11","done":true},{"kg":"8","reps":"9","done":true}],"note":""},{"id":"curl_bar","sets":[{"kg":"25","reps":"10","done":true},{"kg":"25","reps":"8","done":true}],"note":""},{"id":"face_pull","sets":[{"kg":"20.3","reps":"15","done":true},{"kg":"20.3","reps":"13","done":true},{"kg":"20.3","reps":"13","done":true}],"note":""}],"duration":60,"volume":4101,"sets":15,"prs":[],"preSession":{},"calories":420}];
+
+// ══════════════════════════════════════════
+// DATABASE
+// ══════════════════════════════════════════
+const DB={
+  g(k){try{return JSON.parse(localStorage.getItem('fp4_'+k))}catch{return null}},
+  s(k,v){localStorage.setItem('fp4_'+k,JSON.stringify(v))},
+  sessions(){return this.g('sessions')||[]},
+  saveSessions(v){this.s('sessions',v)},
+  goals(){return this.g('goals')||[]},
+  saveGoals(v){this.s('goals',v)},
+  presets(){return this.g('presets')||null},
+  savePresets(v){this.s('presets',v)},
+  settings(){return this.g('settings')||{rest:90}},
+  saveSettings(v){this.s('settings',v)},
+  body(){return this.g('body')||{height:0,entries:[]}},
+  saveBody(v){this.s('body',v)},
+  profile(){return this.g('profile')||{name:'',age:0,goal:''}},
+  saveProfile(v){this.s('profile',v)},
+  imported(){return this.g('imp')||false},
+  setImp(){this.s('imp',true)},
+};
+
+// ══════════════════════════════════════════
+// EXERCISES
+// ══════════════════════════════════════════
+const EX=[
+  {id:'pullup_weighted',name:'Tractions lestées',muscle:'Dos',eq:'Poids du corps',e:'🏔️'},
+  {id:'pullup',name:'Tractions',muscle:'Dos',eq:'Poids du corps',e:'🏔️'},
+  {id:'pullup_supine',name:'Tractions supination',muscle:'Dos',eq:'Poids du corps',e:'💪'},
+  {id:'lat_pull',name:'Tirage vertical poulie',muscle:'Dos',eq:'Machine',e:'⬇️'},
+  {id:'lat_pull_uni',name:'Tirage vertical unilatéral',muscle:'Dos',eq:'Machine',e:'⬇️'},
+  {id:'machine_row',name:'Machine tirage horizontal',muscle:'Dos',eq:'Machine',e:'🚣'},
+  {id:'row_cable_low',name:'Rowing poulie basse',muscle:'Dos',eq:'Machine',e:'🚣'},
+  {id:'row_bar',name:'Rowing barre',muscle:'Dos',eq:'Barre',e:'🚣'},
+  {id:'row_db',name:'Rowing haltère',muscle:'Dos',eq:'Haltères',e:'💪'},
+  {id:'deadlift',name:'Soulevé de terre',muscle:'Dos',eq:'Barre',e:'🏋️'},
+  {id:'pec_fly',name:'Pec fly / Écarté poulie',muscle:'Pectoraux',eq:'Machine',e:'🦋'},
+  {id:'pec_fly_cable',name:'Pec fly poulie unilatéral',muscle:'Pectoraux',eq:'Machine',e:'🔄'},
+  {id:'pec_deck',name:'Machine pec (pec deck)',muscle:'Pectoraux',eq:'Machine',e:'🦋'},
+  {id:'bench',name:'Développé couché barre',muscle:'Pectoraux',eq:'Barre',e:'🏋️'},
+  {id:'bench_db',name:'Développé couché haltères',muscle:'Pectoraux',eq:'Haltères',e:'🏋️'},
+  {id:'pushup',name:'Pompes',muscle:'Pectoraux',eq:'Poids du corps',e:'💪'},
+  {id:'dips',name:'Dips',muscle:'Pectoraux',eq:'Poids du corps',e:'🤸'},
+  {id:'dips_weighted',name:'Dips lestés',muscle:'Pectoraux',eq:'Poids du corps',e:'🤸'},
+  {id:'dips_assisted',name:'Dips assistés',muscle:'Pectoraux',eq:'Machine',e:'🤸'},
+  {id:'ohp',name:'Développé militaire',muscle:'Épaules',eq:'Barre',e:'🎯'},
+  {id:'lat_raise',name:'Élévations latérales',muscle:'Épaules',eq:'Haltères',e:'🦅'},
+  {id:'lat_raise_cable',name:'Élévations latérales poulie',muscle:'Épaules',eq:'Machine',e:'🦅'},
+  {id:'rear_delt_machine',name:'Machine arrière épaule',muscle:'Épaules',eq:'Machine',e:'😤'},
+  {id:'face_pull',name:'Face pull',muscle:'Épaules',eq:'Machine',e:'😤'},
+  {id:'curl_db',name:'Curl biceps haltères',muscle:'Biceps',eq:'Haltères',e:'💪'},
+  {id:'curl_bar',name:'Curl biceps barre',muscle:'Biceps',eq:'Barre',e:'🏋️'},
+  {id:'curl_ez',name:'Curl barre EZ',muscle:'Biceps',eq:'Barre',e:'🏋️'},
+  {id:'hammer',name:'Curl marteau',muscle:'Biceps',eq:'Haltères',e:'🔨'},
+  {id:'hammer_cable',name:'Curl marteau poulie',muscle:'Biceps',eq:'Machine',e:'🔨'},
+  {id:'machine_biceps',name:'Machine biceps',muscle:'Biceps',eq:'Machine',e:'💪'},
+  {id:'curl_cable_brachial',name:'Curl poulie brachial',muscle:'Biceps',eq:'Machine',e:'💪'},
+  {id:'triceps_pushdown',name:'Pushdown poulie',muscle:'Triceps',eq:'Machine',e:'⬇️'},
+  {id:'triceps_pushdown_uni',name:'Pushdown unilatéral',muscle:'Triceps',eq:'Machine',e:'⬇️'},
+  {id:'triceps_overhead_cable',name:'Extension triceps overhead',muscle:'Triceps',eq:'Machine',e:'⬆️'},
+  {id:'machine_triceps',name:'Machine triceps',muscle:'Triceps',eq:'Machine',e:'💀'},
+  {id:'skull',name:'Skull crusher',muscle:'Triceps',eq:'Barre',e:'💀'},
+  {id:'dip_tri',name:'Dips triceps',muscle:'Triceps',eq:'Poids du corps',e:'🤸'},
+  {id:'squat',name:'Squat barre',muscle:'Quadriceps',eq:'Barre',e:'🏋️'},
+  {id:'squat_smith',name:'Squat guidé (Smith)',muscle:'Quadriceps',eq:'Machine',e:'🏋️'},
+  {id:'leg_press_uni',name:'Presse unilatérale',muscle:'Quadriceps',eq:'Machine',e:'🦵'},
+  {id:'lunges',name:'Fentes',muscle:'Quadriceps',eq:'Haltères',e:'🚶'},
+  {id:'bulgarian_squat',name:'Bulgarian split squat',muscle:'Quadriceps',eq:'Poids du corps',e:'🏋️'},
+  {id:'leg_ext',name:'Leg extension',muscle:'Quadriceps',eq:'Machine',e:'🦵'},
+  {id:'leg_ext_uni',name:'Leg extension unilatéral',muscle:'Quadriceps',eq:'Machine',e:'🦵'},
+  {id:'rdl',name:'RDL barre',muscle:'Ischio-jambiers',eq:'Barre',e:'🏋️'},
+  {id:'rdl_db',name:'RDL haltères',muscle:'Ischio-jambiers',eq:'Haltères',e:'🏋️'},
+  {id:'leg_curl',name:'Leg curl assis',muscle:'Ischio-jambiers',eq:'Machine',e:'🦵'},
+  {id:'leg_curl_lying',name:'Leg curl allongé',muscle:'Ischio-jambiers',eq:'Machine',e:'🦵'},
+  {id:'leg_curl_machine',name:'Machine ischios',muscle:'Ischio-jambiers',eq:'Machine',e:'🦵'},
+  {id:'hip_thrust',name:'Hip thrust',muscle:'Fessiers',eq:'Barre',e:'🍑'},
+  {id:'glute_bridge',name:'Pont fessier',muscle:'Fessiers',eq:'Poids du corps',e:'🌉'},
+  {id:'calf_raise',name:'Mollets debout',muscle:'Mollets',eq:'Machine',e:'🦶'},
+  {id:'abs_cable',name:'Abdos poulie',muscle:'Abdominaux',eq:'Machine',e:'🔥'},
+  {id:'crunch',name:'Crunchs',muscle:'Abdominaux',eq:'Poids du corps',e:'🔥'},
+  {id:'plank',name:'Planche',muscle:'Abdominaux',eq:'Poids du corps',e:'📏'},
+  {id:'leg_raise',name:'Relevé de jambes',muscle:'Abdominaux',eq:'Poids du corps',e:'🦵'},
+];
+const gEx=id=>EX.find(e=>e.id===id)||{id,name:id,muscle:'Autre',e:'💪',eq:'—'};
+
+// ══════════════════════════════════════════
+// PRESETS
+// ══════════════════════════════════════════
+const DP={
+  upper:{name:'Upper',color:'#2C5F8A',muscles:'Dos · Pectoraux · Épaules',exs:['pullup_weighted','machine_row','pec_fly','dips_weighted','machine_triceps','curl_ez','face_pull']},
+  lower:{name:'Lower',color:'#2D6A4F',muscles:'Quadriceps · Ischio · Fessiers',exs:['squat','leg_ext','leg_curl_machine','lunges','rdl','lat_raise_cable','face_pull']},
+  push:{name:'Push',color:'#C0392B',muscles:'Pectoraux · Épaules · Triceps',exs:['dips_weighted','pec_fly','ohp','triceps_pushdown_uni','machine_triceps','face_pull']},
+  pull:{name:'Pull',color:'#6B4FA0',muscles:'Dos · Biceps',exs:['pullup_weighted','lat_pull','row_bar','curl_ez','machine_biceps','lat_raise_cable','rear_delt_machine']},
+  arms:{name:'Bras & Épaules',color:'#E07B39',muscles:'Biceps · Triceps · Épaules',exs:['curl_db','hammer','curl_ez','triceps_pushdown_uni','machine_triceps','lat_raise_cable']},
+  full:{name:'Full Body',color:'#B8860B',muscles:'Tous les groupes',exs:['squat','pec_fly','row_bar','ohp','curl_db','triceps_pushdown','abs_cable']},
+};
+const gP=()=>DB.presets()||JSON.parse(JSON.stringify(DP));
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let pg='home',wo=null,woI=null,rI=null,svs={e:3,s:3};
+
+// ══════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════
+const fD=ts=>new Date(ts).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'});
+const fDs=ts=>new Date(ts).toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+const fT=s=>Math.floor(s/60)+':'+(s%60<10?'0':'')+(s%60);
+const c1RM=(kg,reps)=>reps<=0?0:reps===1?kg:Math.round(kg*(1+reps/30)*10)/10;
+function toast(m,dur=2500){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function gLS(id,n=3){return DB.sessions().filter(s=>s.exs.some(e=>e.id===id)).slice(0,n).map(s=>({date:s.date,sets:s.exs.find(e=>e.id===id).sets}));}
+function sugKg(id){const h=gLS(id,1);if(!h.length)return null;const d=h[0].sets.filter(s=>s.done);if(!d.length)return null;const mx=Math.max(...d.map(s=>parseFloat(s.kg)||0));return d.every(s=>s.done)?mx+2.5:mx;}
+function best1RM(id){return DB.sessions().flatMap(s=>s.exs.filter(e=>e.id===id).flatMap(e=>e.sets.filter(s=>s.done).map(s=>c1RM(parseFloat(s.kg)||0,parseInt(s.reps)||0)))).reduce((m,v)=>Math.max(m,v),0)||0;}
+function mDays(){const r={},n=Date.now();DB.sessions().forEach(s=>{s.exs.forEach(ex=>{const m=gEx(ex.id).muscle;const d=Math.floor((n-s.date)/86400000);if(!(m in r)||r[m]>d)r[m]=d;});});return r;}
+function rc(d){return d===undefined||d>4?'green':d>=2?'orange':'red';}
+function wkSess(){return DB.sessions().filter(s=>Date.now()-s.date<7*86400000);}
+function streak(){const ss=DB.sessions();if(!ss.length)return 0;const days=[...new Set(ss.map(s=>Math.floor(s.date/86400000)))].sort((a,b)=>b-a);const t=Math.floor(Date.now()/86400000);let st=0,c=t;for(const d of days){if(d===c||d===c-1){st++;c=d;}else break;}return st;}
+function nxt(){const ss=DB.sessions();if(!ss.length)return Object.keys(gP())[0];const l=ss[0]?.presetKey;const ks=Object.keys(gP());if(!l)return ks[0];const i=ks.indexOf(l);return ks[(i+1)%ks.length];}
+function tSets(){return wo?wo.exs.reduce((t,e)=>t+e.sets.filter(s=>s.done).length,0):0;}
+function tVol(){return wo?Math.round(wo.exs.reduce((t,e)=>t+e.sets.filter(s=>s.done).reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0),0)):0;}
+const QS=['Chaque répétition te rapproche de ta meilleure version.','La régularité bat l\'intensité sur le long terme.','Ton corps peut le faire — c\'est l\'esprit qu\'il faut convaincre.','La douleur d\'aujourd\'hui est la force de demain.','Les progrès se construisent série après série.','Un effort de plus. Toujours un de plus.','Ce que tu répètes, tu le deviens.'];
+
+// ══════════════════════════════════════════
+// BODY METRICS
+// ══════════════════════════════════════════
+function calcBMI(kg,cm){if(!kg||!cm)return null;return Math.round((kg/(cm/100)**2)*10)/10;}
+function bmiLabel(bmi){if(!bmi)return'—';if(bmi<18.5)return'Insuffisance pondérale';if(bmi<25)return'Poids normal';if(bmi<30)return'Surpoids';return'Obésité';}
+function bmiColor(bmi){if(!bmi)return'var(--t3)';if(bmi<18.5)return'var(--bl)';if(bmi<25)return'var(--a)';if(bmi<30)return'var(--or)';return'var(--red)';}
+function calcTDEE(weight,height,age,goal){
+  // Mifflin-St Jeor (homme)
+  const bmr=10*weight+6.25*height-5*age+5;
+  const tdee=Math.round(bmr*1.55); // modérément actif
+  if(goal==='bulk')return tdee+300;
+  if(goal==='cut')return tdee-400;
+  return tdee;
+}
+function calcMacros(kcal,goal){
+  // Protéines: 2.2g/kg recommandé mais on part des kcal
+  const prot=Math.round(kcal*0.30/4);
+  const fat=Math.round(kcal*0.25/9);
+  const carb=Math.round(kcal*0.45/4);
+  return{prot,fat,carb};
+}
+function latestWeight(){const b=DB.body();if(!b.entries.length)return null;return b.entries.sort((a,b)=>b.date-a.date)[0].weight;}
+
+// ══════════════════════════════════════════
+// IMPORT SESSIONS AT FIRST LAUNCH
+// ══════════════════════════════════════════
+function initImport(){
+  if(DB.imported())return;
+  const merged=[...ISESS].sort((a,b)=>b.date-a.date);
+  DB.saveSessions(merged);DB.setImp();
+  console.log('Imported',ISESS.length,'sessions');
+}
+
+// ══════════════════════════════════════════
+// TEXT PARSER
+// ══════════════════════════════════════════
+const EXM={'rowing poulie basse':'row_cable_low','rowing poulie basse unilatéral':'row_cable_low','machine tirage horizontal':'machine_row','tirage horizontal':'machine_row','pec fly':'pec_fly','pec fly poulie unilatéral':'pec_fly_cable','développé couché haltères':'bench_db','développé couché':'bench','machine triceps':'machine_triceps','curl biceps haltères':'curl_db','curl biceps':'curl_db','machine ischios':'leg_curl_machine','machine ischios allongé':'leg_curl_lying','élévation latérale poulie':'lat_raise_cable','élévation latérale':'lat_raise','élévation unilatérale poulie':'lat_raise_cable','élévation latérale unilatérale':'lat_raise_cable','machine arrière épaule':'rear_delt_machine','arrière épaule':'rear_delt_machine','tirage arrière épaule':'rear_delt_machine','extension triceps unilatérale poulie':'triceps_pushdown_uni','extension triceps poulie':'triceps_pushdown','tirage triceps unilatérale poulie':'triceps_pushdown_uni','tirage triceps poulie unilatéral':'triceps_pushdown_uni','tirage triceps unilatérale':'triceps_pushdown_uni','tirage triceps poulie':'triceps_pushdown','tirage triceps':'triceps_pushdown','triceps poulie unilatéral':'triceps_pushdown_uni','triceps poulie unilatérale':'triceps_pushdown_uni','extension triceps poulie unilatérale':'triceps_pushdown_uni','tirage triceps haut':'triceps_overhead_cable','tirage triceps overhead':'triceps_overhead_cable','tirage triceps poulie haute':'triceps_overhead_cable','tractions lestées':'pullup_weighted','tractions normales':'pullup','tractions supination':'pullup_supine','tractions normales lentes':'pullup','squat rack':'squat','squat guidé':'squat_smith','fentes':'lunges','leg extension':'leg_ext','leg extension unilatérale':'leg_ext_uni','leg extension unilatéral contrôle':'leg_ext_uni','leg extension contrôle':'leg_ext','leg extension pausées':'leg_ext','curl marteau':'hammer','curl marteau poulie':'hammer_cable','machine tirage dos':'lat_pull','tirage poulie':'lat_pull','machine tirage dos unilatéral':'lat_pull_uni','tirage verticale':'lat_pull','tirage verticale poulie':'lat_pull','tirage vertical':'lat_pull','dips assistés':'dips_assisted','dips lestés':'dips_weighted','dips pausées 5sec':'dips_weighted','dips pausées':'dips_weighted','dips lents':'dips','machine biceps':'machine_biceps','curl barre ez':'curl_ez','curl biceps barre ez':'curl_ez','curl barre':'curl_bar','curl biceps barre':'curl_bar','face pull':'face_pull','rdl barre':'rdl','rdl haltères':'rdl_db','leg curl':'leg_curl','leg curl allongé':'leg_curl_lying','abdos poulie':'abs_cable','machine pec':'pec_deck','presse unilatérale':'leg_press_uni','bulgarian squat sauté':'bulgarian_squat','curl biceps poulie brachial':'curl_cable_brachial','curl brachial poulie':'curl_cable_brachial','rowing barre':'row_bar'};
+function findId(raw){const n=raw.toLowerCase().replace(/\s+/g,' ').replace(/\s*[\d.,]+kg.*/,'').replace(/\s*\d+x\d+.*/,'').replace(/\s*\d+->\d+.*/,'').trim();if(EXM[n])return EXM[n];for(const[k,v]of Object.entries(EXM).sort((a,b)=>b[0].length-a[0].length))if(n.startsWith(k)||n.includes(k))return v;return n.replace(/[^a-z0-9]/g,'_').substring(0,30);}
+function pSets(raw){const km=raw.match(/([\d.,]+)kg/i);const kg=km?km[1].replace(',','.'):'';const m=raw.match(/(\d+)x([\d-]+)/);if(m){const n=parseInt(m[1]);const rl=m[2].split('-');return Array.from({length:n},(_,i)=>({kg,reps:rl[Math.min(i,rl.length-1)],done:true}));}const a=raw.match(/(\d+)->(\d+)/);if(a)return[{kg,reps:a[1],done:true},{kg,reps:a[2],done:true}];const s=raw.match(/\b(\d+)\s*$/);if(s)return[{kg,reps:s[1],done:true}];return[{kg,reps:'',done:true}];}
+function parseText(text){const lines=text.split('\n');const sessions=[];let cur=null;for(const line of lines){const raw=line.trim();if(!raw)continue;const hdr=raw.match(/^[Ss][ée]ance\s+\d+\s+([\w\s\éàèêùîôûç]+):\s*(\d{2}\/\d{2}\/\d{4})/i);if(hdr){if(cur)sessions.push(finS(cur));const[d,m,y]=hdr[2].split('/');const ts=new Date(parseInt(y),parseInt(m)-1,parseInt(d),10,0,0).getTime();cur={id:Date.now()+Math.random()*9999|0,date:ts,presetKey:hdr[1].trim().toLowerCase(),type:hdr[1].trim(),exs:[],duration:60,volume:0,sets:0,prs:[],preSession:{},calories:420};continue;}const em=raw.match(/^[∙•\-]\s*(.+)/);if(em&&cur){const re=em[1].trim();const id=findId(re);const sets=pSets(re);const ex=cur.exs.find(e=>e.id===id);if(ex)ex.sets.push(...sets);else cur.exs.push({id,sets,note:'​'});}}if(cur)sessions.push(finS(cur));return sessions;}
+function finS(s){let v=0,st=0;s.exs.forEach(ex=>ex.sets.forEach(set=>{if(set.done){st++;try{v+=parseFloat(set.kg||0)*parseInt(set.reps||0);}catch{}}}));s.volume=Math.round(v);s.sets=st;s.calories=s.duration*7;return s;}
+
+function openImport(){
+  openM(`<div class="mt">📥 Importer des séances</div>
+    <p style="font-size:12px;color:var(--t2);margin-bottom:10px">Format : <code style="background:var(--bg2);padding:2px 5px;border-radius:4px;font-size:11px">Séance 1 upper: 01/10/2025</code> puis <code style="background:var(--bg2);padding:2px 5px;border-radius:4px;font-size:11px">∙ Exercice 20kg 3x10</code></p>
+    <label class="lbl">Colle tes séances</label>
+    <textarea class="inp" id="itxt" rows="9" style="resize:vertical;font-size:11px;font-family:monospace" placeholder="Séance 1 upper: 01/10/2025&#10;∙ Tractions lestées 10kg 3x6&#10;∙ Pec fly 60kg 3x9&#10;&#10;Séance 2 lower: 03/10/2025&#10;..."></textarea>
+    <button class="btn bp bfull" style="margin-top:10px" onclick="doImport()">Importer →</button>`);
+}
+function doImport(){const txt=document.getElementById('itxt')?.value||'';if(!txt.trim()){toast('Colle du texte d\'abord');return;}const p=parseText(txt);if(!p.length){toast('Format non reconnu. Vérifie le texte.');return;}const merged=[...p,...DB.sessions()].sort((a,b)=>b.date-a.date);DB.saveSessions(merged);closeM();toast(p.length+' séance(s) importée(s) !');render();}
+
+// ══════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════
+function go(p){pg=p;document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));const n=document.getElementById('nb-'+p);if(n)n.classList.add('on');render();}
+function render(){const sc=document.getElementById('sc');sc.innerHTML='';sc.scrollTop=0;({home:rHome,seances:rSeances,objectifs:rObjectifs,body:rBody,historique:rHist,stats:rStats}[pg]||rHome)(sc);}
+
+// ══════════════════════════════════════════
+// CALENDAR
+// ══════════════════════════════════════════
+function buildCalendar(ss, ps){
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth();
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const firstDay = (new Date(y, m, 1).getDay()+6)%7; // Mon=0
+  const today = now.getDate();
+
+  // Map each day to session type
+  const dayMap = {};
+  ss.forEach(s => {
+    const d = new Date(s.date);
+    if(d.getFullYear()===y && d.getMonth()===m){
+      dayMap[d.getDate()] = dayMap[d.getDate()]||[];
+      dayMap[d.getDate()].push({type:s.presetKey, color: ps[s.presetKey]?.color||'#2D6A4F'});
+    }
+  });
+
+  const days = ['L','M','M','J','V','S','D'];
+  let html = `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:6px">
+    ${days.map(d=>`<div style="text-align:center;font-size:9px;font-weight:700;color:var(--t3);padding-bottom:2px">${d}</div>`).join('')}
+  </div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">`;
+
+  // Empty cells before first day
+  for(let i=0;i<firstDay;i++) html+=`<div></div>`;
+
+  for(let d=1;d<=daysInMonth;d++){
+    const sess = dayMap[d]||[];
+    const isToday = d===today;
+    const hasSess = sess.length>0;
+    const color = hasSess ? sess[sess.length-1].color : null;
+    html+=`<div style="aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:8px;position:relative;
+      background:${isToday?'var(--t)':hasSess?color+'18':'transparent'};
+      border:${isToday?'2px solid var(--t)':hasSess?'1.5px solid '+color+'44':'1px solid transparent'};
+      cursor:${hasSess?'pointer':'default'}"
+      ${hasSess?`onclick="showDaySess(${d},${m},${y})"`:''}>
+      <span style="font-size:11px;font-weight:${isToday||hasSess?'700':'500'};color:${isToday?'#fff':hasSess?color:'var(--t3)'}">${d}</span>
+      ${sess.length>1?`<span style="position:absolute;top:2px;right:3px;width:5px;height:5px;border-radius:50%;background:${color}"></span>`:''}
+    </div>`;
+  }
+  html+=`</div>`;
+
+  // Legend
+  const seenKeys = [...new Set(Object.values(dayMap).flat().map(s=>s.type))];
+  if(seenKeys.length){
+    html+=`<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;padding-top:9px;border-top:1px solid var(--bd)">`;
+    seenKeys.forEach(k=>{const p=ps[k];if(p)html+=`<div style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:${p.color};display:inline-block"></span><span style="font-size:10px;font-weight:600;color:var(--t2)">${p.name}</span></div>`;});
+    html+=`</div>`;
+  }
+  return html;
+}
+
+function showDaySess(d,m,y){
+  const ss=DB.sessions();
+  const daySess=ss.filter(s=>{const sd=new Date(s.date);return sd.getDate()===d&&sd.getMonth()===m&&sd.getFullYear()===y;});
+  if(!daySess.length)return;
+  openM(`<div class="mt">${d} ${new Date(y,m,d).toLocaleDateString('fr-FR',{month:'long',year:'numeric'})}</div>
+    ${daySess.map(s=>`<div style="background:var(--bg2);border-radius:var(--rs);padding:12px;margin-bottom:8px;cursor:pointer" onclick="closeM();setTimeout(()=>openSD(${s.id}),50)">
+      <div style="font-family:'DM Serif Display',serif;font-size:15px;margin-bottom:4px">${s.type}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span class="chip cb">💪 ${s.sets} séries</span>
+        <span class="chip cg">${s.volume}kg</span>
+        <span class="chip co">${s.duration}min</span>
+        ${s.prs?.length?`<span class="chip cgo">🏆 ${s.prs.length} PR</span>`:''}
+      </div>
+    </div>`).join('')}
+  `);
+}
+
+// ══════════════════════════════════════════
+// WARMUP DATA
+// ══════════════════════════════════════════
+const WARMUP = {
+  upper:[
+    {name:'Rotation épaules',duration:30,desc:'Grands cercles vers l\'avant et vers l\'arrière, bras tendus.'},
+    {name:'Band pull-apart',duration:30,desc:'Bras tendus devant, écarter les mains vers les épaules. Élastique ou sans.'},
+    {name:'Cat-cow (dos)',duration:30,desc:'À quatre pattes, alterner dos rond et creux lentement.'},
+    {name:'Pompes lentes ×10',duration:40,desc:'Descendre en 3 secondes, monter en 1. Amplitude complète.'},
+    {name:'Rotations nuque',duration:20,desc:'Lentement, droite puis gauche. Jamais de cercles complets.'},
+  ],
+  lower:[
+    {name:'Leg swings',duration:30,desc:'Debout, balancer chaque jambe vers l\'avant et l\'arrière 10x.'},
+    {name:'Hip circles',duration:30,desc:'Mains sur les hanches, grands cercles avec les hanches.'},
+    {name:'Squat bodyweight ×15',duration:40,desc:'Descendre lentement, talons au sol, genoux dans l\'axe.'},
+    {name:'Fentes sur place ×10',duration:40,desc:'Alterner les jambes, genou arrière proche du sol.'},
+    {name:'Étirement fléchisseurs',duration:30,desc:'Un genou au sol, pousser le bassin vers l\'avant. 15s chaque côté.'},
+  ],
+  push:[
+    {name:'Rotation épaules',duration:30,desc:'Grands cercles bras tendus, avant puis arrière.'},
+    {name:'Pompes inclinées ×10',duration:40,desc:'Mains sur un banc, échauffement progressif des pectoraux.'},
+    {name:'Cercles coudes',duration:20,desc:'Coudes fléchis, dessiner des cercles pour chauffer les triceps.'},
+    {name:'Wall slides',duration:30,desc:'Dos au mur, faire glisser les bras vers le haut comme un ange.'},
+    {name:'Dips corps léger ×10',duration:30,desc:'Sur chaise ou banc, faible amplitude pour activer les triceps.'},
+  ],
+  pull:[
+    {name:'Dead hangs 20s',duration:25,desc:'Se suspendre à une barre, corps relâché. Décompresse la colonne.'},
+    {name:'Scapular pull-ups ×10',duration:30,desc:'Suspendu, hausser et abaisser les omoplates sans plier les coudes.'},
+    {name:'Rotation épaules',duration:30,desc:'Grands cercles vers l\'avant et l\'arrière pour échauffer les deltoïdes.'},
+    {name:'Band face pulls ×15',duration:30,desc:'Imiter le face pull avec un élastique ou à vide pour activer les arrière-épaules.'},
+    {name:'Curl léger ×15',duration:30,desc:'Avec haltères légers ou à vide pour activer les biceps.'},
+  ],
+  arms:[
+    {name:'Rotation poignets',duration:20,desc:'Cercles dans les deux sens, 10x chaque direction.'},
+    {name:'Curl à vide ×20',duration:30,desc:'Mouvement complet sans charge pour activer les biceps.'},
+    {name:'Extension triceps ×15',duration:30,desc:'Bras au-dessus de la tête, fléchir et étendre sans charge.'},
+    {name:'Rotation épaules',duration:30,desc:'Grands cercles pour préparer les deltoïdes.'},
+    {name:'Pompes ×10',duration:30,desc:'Pour activer toute la chaîne du haut du corps.'},
+  ],
+  full:[
+    {name:'Jumping jacks ×20',duration:30,desc:'Monter le rythme cardiaque progressivement.'},
+    {name:'Squat bodyweight ×15',duration:40,desc:'Descendre lentement pour activer les jambes.'},
+    {name:'Pompes ×10',duration:30,desc:'Activer le haut du corps.'},
+    {name:'Rotation épaules',duration:20,desc:'Grands cercles avant et arrière.'},
+    {name:'Hip circles',duration:20,desc:'Grands cercles avec les hanches pour le bas du corps.'},
+  ],
+  default:[
+    {name:'Jumping jacks ×20',duration:30,desc:'Élever la fréquence cardiaque.'},
+    {name:'Rotation épaules',duration:25,desc:'Grands cercles avant et arrière.'},
+    {name:'Squat bodyweight ×10',duration:30,desc:'Activer les jambes et le bas du dos.'},
+    {name:'Pompes ×8',duration:30,desc:'Activer le haut du corps.'},
+    {name:'Hip circles',duration:20,desc:'Réchauffer les hanches.'},
+  ]
+};
+
+function getWarmup(presetKey){
+  const k = presetKey?.toLowerCase()||'';
+  if(k.includes('upper'))return WARMUP.upper;
+  if(k.includes('lower'))return WARMUP.lower;
+  if(k.includes('push'))return WARMUP.push;
+  if(k.includes('pull'))return WARMUP.pull;
+  if(k.includes('arm')||k.includes('bras'))return WARMUP.arms;
+  if(k.includes('full'))return WARMUP.full;
+  return WARMUP.default;
+}
+
+let warmupStep=0, warmupTimer=null, warmupExercises=[], warmupCb=null;
+
+function showWarmup(presetKey, cb){
+  warmupExercises = getWarmup(presetKey);
+  warmupStep = 0;
+  warmupCb = cb;
+  renderWarmupStep();
+}
+
+function renderWarmupStep(){
+  const ex = warmupExercises[warmupStep];
+  const total = warmupExercises.length;
+  const isLast = warmupStep === total-1;
+  if(warmupTimer)clearInterval(warmupTimer);
+  let rem = ex.duration;
+
+  openM(`<div style="text-align:center;margin-bottom:14px">
+    <div style="font-size:10px;font-weight:700;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Échauffement · ${warmupStep+1}/${total}</div>
+    <div class="pb" style="height:5px;margin-bottom:14px"><div class="pf" id="wu-bar" style="width:${Math.round((warmupStep/total)*100)}%;background:var(--or);transition:width .6s ease"></div></div>
+    <div style="font-size:40px;margin-bottom:8px">🔥</div>
+    <div style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:6px">${ex.name}</div>
+    <div style="font-size:12px;color:var(--t2);line-height:1.5;margin-bottom:16px">${ex.desc}</div>
+    <div style="font-family:'DM Serif Display',serif;font-size:52px;color:var(--or);margin-bottom:6px" id="wu-timer">${rem}s</div>
+    <div style="font-size:10px;color:var(--t3);margin-bottom:18px">secondes restantes</div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <button class="btn bg bfull" onclick="wuSkip()">Passer ›</button>
+    ${isLast?`<button class="btn bp bfull" onclick="wuFinish()">Commencer la séance 💪</button>`:''}
+  </div>`);
+
+  setTimeout(()=>{const b=document.getElementById('wu-bar');if(b)b.style.width=Math.round(((warmupStep+1)/total)*100)+'%';},50);
+
+  warmupTimer = setInterval(()=>{
+    rem--;
+    const el=document.getElementById('wu-timer');if(el)el.textContent=rem+'s';
+    if(rem<=0){
+      clearInterval(warmupTimer);
+      if(isLast) wuFinish();
+      else { warmupStep++; renderWarmupStep(); }
+    }
+  },1000);
+}
+
+function wuSkip(){
+  if(warmupTimer)clearInterval(warmupTimer);
+  warmupStep++;
+  if(warmupStep>=warmupExercises.length) wuFinish();
+  else renderWarmupStep();
+}
+function wuFinish(){
+  if(warmupTimer)clearInterval(warmupTimer);
+  closeM();
+  toast('Échauffement terminé 🔥 C\'est parti !');
+  setTimeout(()=>{ if(warmupCb) warmupCb(); warmupCb=null; },300);
+}
+
+// ══════════════════════════════════════════
+// HOME
+// ══════════════════════════════════════════
+function rHome(sc){
+  const ss=DB.sessions(),ws=wkSess(),md=mDays(),nx=nxt(),ps=gP();
+  const st=streak(),neg=Object.entries(md).filter(([,d])=>d>7).map(([m])=>m);
+  const lw=latestWeight();const bd=DB.body();const prof=DB.profile();
+  const bmi=calcBMI(lw,bd.height);
+  sc.innerHTML=`<div style="padding:18px 15px 6px" class="fade">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px">
+      <div class="ptitle">${prof.name?'Bonjour, '+prof.name+' 👋':'Bonjour 👋'}</div>
+      <div style="font-size:10px;color:var(--t3);font-weight:500;padding-top:9px">${new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})}</div>
+    </div>
+    <p style="font-size:12px;color:var(--t2);font-style:italic;margin-bottom:18px">"${QS[new Date().getDay()%QS.length]}"</p>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:16px">
+      <div class="sb"><div class="sv">${ss.length}</div><div class="sl">Séances</div></div>
+      <div class="sb"><div class="sv">${ws.length}</div><div class="sl">Cette sem.</div></div>
+      <div class="sb"><div class="sv">${st}🔥</div><div class="sl">Streak</div></div>
+    </div>
+
+    ${lw?`<div class="card" style="margin-bottom:14px;display:flex;align-items:center;gap:12px">
+      <div style="flex:1">
+        <div style="font-size:11px;font-weight:700;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px">Poids actuel</div>
+        <div style="font-family:'DM Serif Display',serif;font-size:28px">${lw} kg</div>
+        ${bmi?`<div style="font-size:11px;font-weight:600;color:${bmiColor(bmi)};margin-top:2px">IMC ${bmi} — ${bmiLabel(bmi)}</div>`:''}
+      </div>
+      <button class="btn bg bsm" onclick="go('body')">⚖️ Suivi</button>
+    </div>`:`<div class="card" style="margin-bottom:14px;border:1.5px dashed var(--bd2);box-shadow:none;cursor:pointer" onclick="go('body')">
+      <div style="font-size:13px;font-weight:600;color:var(--t2)">⚖️ Ajouter ton poids</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:3px">Suivi corporel, IMC, calories</div>
+    </div>`}
+
+    ${nx&&ps[nx]?`<div style="margin-bottom:16px"><div class="slbl">Prochaine séance suggérée</div>
+      <div class="card" style="border-left:4px solid ${ps[nx].color}">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><div style="font-family:'DM Serif Display',serif;font-size:17px;margin-bottom:2px">${ps[nx].name}</div><div style="font-size:11px;color:var(--t2)">${ps[nx].muscles}</div></div>
+          <button class="btn bp bsm" onclick="startPF('${nx}')">Lancer →</button>
+        </div>
+      </div></div>`:''}
+
+    <div style="margin-bottom:16px"><div class="slbl">Récupération musculaire</div>
+      <div class="card"><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        ${['Pectoraux','Dos','Épaules','Biceps','Triceps','Quadriceps','Ischio-jambiers','Fessiers','Mollets','Abdominaux'].map(m=>{const d=md[m];const c=rc(d);return`<div style="display:flex;align-items:center;gap:5px"><span class="rd rd${c}"></span><span style="font-size:11px;font-weight:500">${m}</span><span style="font-size:10px;color:var(--t3);margin-left:auto">${d===undefined?'Jamais':'J-'+d}</span></div>`;}).join('')}
+      </div></div>
+    </div>
+
+    ${neg.length?`<div class="card" style="border-left:4px solid var(--or);margin-bottom:14px"><div style="font-size:12px;font-weight:600;color:var(--or)">⚠️ Muscles négligés +7j</div><div style="font-size:11px;color:var(--t2);margin-top:2px">${neg.join(', ')}</div></div>`:''}
+
+    <div style="margin-bottom:16px"><div class="slbl">Calendrier du mois</div>
+      <div class="card" style="padding:12px">${buildCalendar(ss,ps)}</div>
+    </div>
+
+    ${ss.length?`<div style="margin-bottom:6px"><div class="slbl">Dernière séance</div>${hItem(ss[0],true)}</div>`:`<div class="flat" style="text-align:center;padding:28px 14px;margin-bottom:12px"><div style="font-size:30px;margin-bottom:7px">💪</div><div style="font-size:13px;font-weight:600;color:var(--t2)">Lance ta première séance !</div></div>`}
+  </div>`;
+}
+
+// ══════════════════════════════════════════
+// SÉANCES
+// ══════════════════════════════════════════
+function rSeances(sc){
+  const ps=gP(),md=mDays();
+  sc.innerHTML=`<div style="padding:18px 15px" class="fade">
+    <div class="ptitle" style="margin-bottom:14px">Séances</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:18px">
+      <button class="btn bp bfull" onclick="startCF()">+ Séance libre</button>
+      <button class="btn bg bfull" onclick="openImport()">📥 Importer</button>
+    </div>
+    <div class="slbl">Séances types</div>
+    ${Object.entries(ps).map(([k,p])=>{const ms=p.muscles.split('·').map(m=>m.trim());const ds=ms.map(m=>md[m]).filter(d=>d!==undefined);const mx=ds.length?Math.max(...ds):99;const c=rc(mx);
+    return`<div class="card" style="margin-bottom:8px;border-left:4px solid ${p.color}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+        <div style="flex:1;margin-right:8px"><div style="font-family:'DM Serif Display',serif;font-size:16px;margin-bottom:2px">${p.name}</div>
+          <div style="font-size:11px;color:var(--t2);margin-bottom:3px">${p.muscles}</div>
+          <div style="display:flex;align-items:center;gap:4px"><span class="rd rd${c}"></span><span style="font-size:10px;color:var(--t3)">${mx>=99?'Jamais':'Dernier J-'+mx}</span></div>
+        </div><button class="btn bp bsm" onclick="startPF('${k}')">Lancer</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px">${p.exs.slice(0,4).map(id=>`<span class="chip cgr">${gEx(id).name}</span>`).join('')}${p.exs.length>4?`<span class="chip cgr">+${p.exs.length-4}</span>`:''}</div>
+      <button class="btn bg bxs bfull" onclick="editP('${k}')">✏️ Modifier</button>
+    </div>`;}).join('')}
+  </div>`;
+}
+
+// ══════════════════════════════════════════
+// PRE-SESSION
+// ══════════════════════════════════════════
+function startPF(k){const p=gP()[k];svs={e:3,s:3};
+  openM(`<div class="mt">${p.name}</div>
+    <p style="font-size:11px;color:var(--t2);margin-bottom:14px">${p.muscles}</p>
+    <div style="margin-bottom:11px"><label class="lbl">Niveau d'énergie</label><div class="stars" id="ste">${[1,2,3,4,5].map(i=>`<span class="star ${i<=3?'on':''}" onclick="sStar('e',${i})">⚡</span>`).join('')}</div></div>
+    <div style="margin-bottom:11px"><label class="lbl">Qualité du sommeil</label><div class="stars" id="sts">${[1,2,3,4,5].map(i=>`<span class="star ${i<=3?'on':''}" onclick="sStar('s',${i})">😴</span>`).join('')}</div></div>
+    <div style="margin-bottom:14px"><label class="lbl">Douleurs (optionnel)</label><input class="inp" id="pp" placeholder="Ex: genou gauche sensible…"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border-radius:var(--rs);padding:12px 14px;margin-bottom:14px">
+      <div>
+        <div style="font-size:13px;font-weight:700">🔥 Échauffement guidé</div>
+        <div style="font-size:11px;color:var(--t2);margin-top:2px">5 exercices · ~3 min · adapté à ${p.name}</div>
+      </div>
+      <input type="checkbox" id="wu-toggle" checked style="width:20px;height:20px;accent-color:var(--a);cursor:pointer;flex-shrink:0">
+    </div>
+    <button class="btn bp bfull" onclick="handleStart('${k}')">Commencer →</button>`);
+}
+function handleStart(k){
+  const doWarmup=document.getElementById('wu-toggle')?.checked;
+  if(doWarmup){
+    showWarmup(k,()=>lW(k));
+  } else {
+    lW(k);
+  }
+}
+function sStar(t,n){svs[t]=n;const c=document.getElementById('st'+t);if(c)c.querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('on',i<n));}
+function startCF(){openM(`<div class="mt">Séance libre</div>
+  <div style="margin-bottom:11px"><label class="lbl">Nom</label><input class="inp" id="cn" placeholder="Ma séance…"></div>
+  <div class="slbl" style="margin-bottom:6px">Exercices</div>
+  <div style="max-height:270px;overflow-y:auto;margin-bottom:12px">
+    ${EX.map(e=>`<label style="display:flex;align-items:center;gap:7px;padding:8px;background:var(--bg2);border-radius:var(--rx);margin-bottom:3px;cursor:pointer">
+      <input type="checkbox" id="ce-${e.id}" style="width:14px;height:14px;accent-color:var(--a);flex-shrink:0">
+      <span style="font-size:12px;font-weight:500">${e.e} ${e.name} <span style="font-size:10px;color:var(--t3)">· ${e.muscle}</span></span>
+    </label>`).join('')}
+  </div>
+  <button class="btn bp bfull" onclick="lCust()">Commencer →</button>`);}
+function lCust(){const name=document.getElementById('cn')?.value||'Séance libre';const ids=EX.filter(e=>document.getElementById('ce-'+e.id)?.checked).map(e=>e.id);if(!ids.length){toast('Sélectionne au moins un exercice');return;}const ps=gP();ps['_custom']={name,color:'#2D6A4F',muscles:'Personnalisé',exs:ids};DB.savePresets(ps);closeM();lW('_custom');}
+function lW(k){closeM();const p=gP()[k];wo={k,type:p.name,exs:p.exs.map(id=>({id,sets:[{kg:'',reps:'',done:false}],note:''})),startTime:Date.now(),pre:{e:svs.e,s:svs.s,pain:document.getElementById('pp')?.value||''},prs:[]};document.getElementById('wt').textContent=p.name;document.getElementById('wo').classList.add('open');rWoBody();if(woI)clearInterval(woI);woI=setInterval(()=>{const el=Date.now()-wo.startTime;const m=Math.floor(el/60000),s=Math.floor((el%60000)/1000);const e=document.getElementById('wc');if(e)e.textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;uWoF();},1000);}
+
+// ══════════════════════════════════════════
+// WORKOUT
+// ══════════════════════════════════════════
+function rWoBody(){const body=document.getElementById('wob');if(!body||!wo)return;
+  body.innerHTML=wo.exs.map((ex,ei)=>{const e=gEx(ex.id);const hist=gLS(ex.id,3);const sug=sugKg(ex.id);
+    return`<div style="margin-bottom:20px" id="eb-${ei}">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px">
+        <div class="ei">${e.e}</div>
+        <div style="flex:1"><div style="font-weight:700;font-size:14px">${e.name}</div><div style="font-size:10px;color:var(--t2)">${e.muscle} · ${e.eq}</div></div>
+        ${sug!==null?`<span class="chip cg" style="font-size:10px">💡 ${sug}kg</span>`:''}
+      </div>
+      ${hist.length?`<div style="background:var(--bg2);border-radius:var(--rs);padding:7px 9px;margin-bottom:6px">
+        <div style="font-size:9px;font-weight:700;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px">Historique</div>
+        ${hist.map(h=>`<div style="font-size:10px;color:var(--t2);font-weight:500;margin-bottom:2px">📅 ${fDs(h.date)} → ${h.sets.filter(s=>s.done).map(s=>`${s.kg||'?'}kg×${s.reps||'?'}`).join(' · ')||'—'}</div>`).join('')}
+      </div>`:''}
+      <div style="display:grid;grid-template-columns:22px 1fr 1fr 34px;gap:5px;margin-bottom:4px"><div></div><div style="text-align:center;font-size:9px;font-weight:700;color:var(--t3)">KG</div><div style="text-align:center;font-size:9px;font-weight:700;color:var(--t3)">REPS</div><div></div></div>
+      <div id="sets-${ei}">${ex.sets.map((s,si)=>sRow(ei,si,s)).join('')}</div>
+      <div style="display:flex;gap:5px;margin-top:4px">
+        <button class="btn bg bxs" onclick="addSet(${ei})">+ Série</button>
+        <button class="btn bg bxs" onclick="repEx(${ei})">🔄 Changer</button>
+        <button class="btn bg bxs" style="margin-left:auto" onclick="openRC()">⏱</button>
+      </div>
+      <input class="inp" style="margin-top:5px;font-size:11px;padding:7px 9px" placeholder="Note…" value="${ex.note||''}" oninput="wo.exs[${ei}].note=this.value">
+      <div class="div" style="margin-top:10px"></div>
+    </div>`;
+  }).join('');}
+function sRow(ei,si,set){return`<div class="sr" id="sr-${ei}-${si}"><div class="sn">${si+1}</div><input class="si" type="number" placeholder="kg" value="${set.kg||''}" inputmode="decimal" oninput="wo.exs[${ei}].sets[${si}].kg=this.value"><input class="si" type="number" placeholder="reps" value="${set.reps||''}" inputmode="numeric" oninput="wo.exs[${ei}].sets[${si}].reps=this.value"><button class="sc ${set.done?'done':''}" onclick="togSet(${ei},${si})">✓</button></div>`;}
+function togSet(ei,si){if(!wo)return;const set=wo.exs[ei].sets[si];set.done=!set.done;const btn=document.querySelector(`#sr-${ei}-${si} .sc`);if(btn)btn.className='sc'+(set.done?' done':'');if(set.done){const id=wo.exs[ei].id;const kg=parseFloat(set.kg)||0,reps=parseInt(set.reps)||0;if(kg>0&&reps>0){const rm=c1RM(kg,reps);const prev=best1RM(id);if(rm>prev){wo.prs.push({id,kg,reps,rm});toast('🏆 PR '+gEx(id).name+' '+kg+'kg×'+reps+'!');}}startR(DB.settings().rest||90);}uWoF();}
+function addSet(ei){if(!wo)return;const ex=wo.exs[ei];const last=ex.sets[ex.sets.length-1];ex.sets.push({kg:last?.kg||'',reps:last?.reps||'',done:false});const c=document.getElementById('sets-'+ei);if(c){const si=ex.sets.length-1;const d=document.createElement('div');d.innerHTML=sRow(ei,si,ex.sets[si]);c.appendChild(d.firstChild);}}
+function repEx(ei){openM(`<div class="mt">Changer l'exercice</div><div style="max-height:420px;overflow-y:auto">${EX.map(e=>`<div class="er" onclick="doRep(${ei},'${e.id}')"><div class="ei">${e.e}</div><div><div style="font-weight:600;font-size:13px">${e.name}</div><div style="font-size:10px;color:var(--t2)">${e.muscle}</div></div></div>`).join('')}</div>`);}
+function doRep(ei,id){if(!wo)return;wo.exs[ei]={id,sets:[{kg:'',reps:'',done:false}],note:''};closeM();rWoBody();toast(gEx(id).name+' !');}
+function addExMid(){openM(`<div class="mt">Ajouter un exercice</div><div style="max-height:440px;overflow-y:auto">${EX.map(e=>`<div class="er" onclick="pushEx('${e.id}')"><div class="ei">${e.e}</div><div><div style="font-weight:600;font-size:13px">${e.name}</div><div style="font-size:10px;color:var(--t2)">${e.muscle}</div></div></div>`).join('')}</div>`);}
+function pushEx(id){if(!wo)return;wo.exs.push({id,sets:[{kg:'',reps:'',done:false}],note:''});closeM();rWoBody();toast(gEx(id).name+' ajouté !');}
+function uWoF(){const a=document.getElementById('wse'),b=document.getElementById('wvo'),c=document.getElementById('wpr');if(a)a.textContent=tSets();if(b)b.textContent=tVol()+'kg';if(c)c.textContent=wo?.prs.length||0;}
+function openRC(){const cur=DB.settings().rest||90;openM(`<div class="mt">⏱ Repos</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px">${[60,90,120,150,180,240].map(s=>`<button class="btn ${cur===s?'bp':'bg'}" onclick="setR(${s})">${s}s</button>`).join('')}</div><label class="lbl">Personnalisé (s)</label><input class="inp" type="number" id="rc" value="${cur}" style="margin-bottom:10px"><button class="btn bp bfull" onclick="setR(parseInt(document.getElementById('rc').value)||90)">Appliquer</button>`);}
+function setR(s){const st=DB.settings();st.rest=s;DB.saveSettings(st);closeM();startR(s);}
+function confEnd(){openM(`<div class="mt">Terminer ?</div><p style="font-size:12px;color:var(--t2);margin-bottom:14px">${tSets()} séries · ${tVol()} kg</p><button class="btn bp bfull" style="margin-bottom:6px" onclick="endWo()">Oui, terminer ✓</button><button class="btn bg bfull" onclick="closeM()">Continuer →</button>`);}
+function endWo(){if(!wo)return;clearInterval(woI);const dur=Math.floor((Date.now()-wo.startTime)/60000);const s={id:Date.now(),date:Date.now(),presetKey:wo.k,type:wo.type,duration:dur,exs:wo.exs.map(e=>({id:e.id,sets:e.sets,note:e.note})),volume:tVol(),sets:tSets(),prs:wo.prs,preSession:wo.pre,calories:Math.max(dur*7,1)};const ss=DB.sessions();ss.unshift(s);DB.saveSessions(ss);updGoals();document.getElementById('wo').classList.remove('open');wo=null;closeM();showSum(s);}
+function updGoals(){const goals=DB.goals();goals.forEach(g=>{if(g.type==='1rm')g.current=best1RM(g.exId);else if(g.type==='reps')g.current=DB.sessions().flatMap(s=>s.exs.filter(e=>e.id===g.exId).flatMap(e=>e.sets.filter(s=>s.done).map(s=>parseInt(s.reps)||0))).reduce((m,v)=>Math.max(m,v),0);});DB.saveGoals(goals);}
+function showSum(s){openM(`<div class="mt">🎉 Séance terminée !</div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:11px"><div class="sb" style="padding:10px"><div class="sv" style="font-size:21px">${s.duration}</div><div class="sl">min</div></div><div class="sb" style="padding:10px"><div class="sv" style="font-size:21px">${s.volume}</div><div class="sl">kg total</div></div></div>${s.prs.length?`<div style="background:var(--gol);border-radius:var(--rs);padding:9px;margin-bottom:9px"><div style="font-weight:700;color:var(--go);font-size:12px;margin-bottom:3px">🏆 Records battus !</div>${s.prs.map(p=>`<div style="font-size:11px;font-weight:600">${gEx(p.id).name} — ${p.kg}kg × ${p.reps}</div>`).join('')}</div>`:''}<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px">${s.exs.map(e=>`<span class="chip cgr">${gEx(e.id).e} ${gEx(e.id).name}</span>`).join('')}</div><button class="btn bp bfull" onclick="closeM();go('home')">Super ! 💪</button>`);}
+
+// ══════════════════════════════════════════
+// REST TIMER
+// ══════════════════════════════════════════
+function startR(total){let rem=total;document.getElementById('ro').classList.add('open');const circ=478;const pr=document.getElementById('rpr');const upd=()=>{document.getElementById('rs').textContent=fT(rem);if(pr)pr.style.strokeDashoffset=circ*(1-rem/total);};upd();if(rI)clearInterval(rI);rI=setInterval(()=>{rem--;upd();if(rem<=0)skipR();},1000);}
+function skipR(){clearInterval(rI);document.getElementById('ro').classList.remove('open');}
+
+// ══════════════════════════════════════════
+// EDIT PRESET
+// ══════════════════════════════════════════
+function editP(k){const p=gP()[k];openM(`<div class="mt">✏️ ${p.name}</div><div style="max-height:350px;overflow-y:auto;margin-bottom:11px">${EX.map(e=>`<label style="display:flex;align-items:center;gap:7px;padding:7px;background:var(--bg2);border-radius:var(--rx);margin-bottom:3px;cursor:pointer"><input type="checkbox" id="ep-${e.id}" ${p.exs.includes(e.id)?'checked':''} style="width:14px;height:14px;accent-color:var(--a);flex-shrink:0"><span style="font-size:12px;font-weight:500">${e.e} ${e.name} <span style="font-size:10px;color:var(--t3)">· ${e.muscle}</span></span></label>`).join('')}</div><button class="btn bp bfull" style="margin-bottom:5px" onclick="saveP('${k}')">Sauvegarder</button><button class="btn bg bfull" onclick="resetP('${k}')">Réinitialiser</button>`);}
+function saveP(k){const ps=gP();const ids=EX.filter(e=>document.getElementById('ep-'+e.id)?.checked).map(e=>e.id);if(!ids.length){toast('Sélectionne au moins un exercice');return;}ps[k].exs=ids;DB.savePresets(ps);closeM();toast('Mis à jour !');render();}
+function resetP(k){const ps=gP();ps[k]=JSON.parse(JSON.stringify(DP[k]));DB.savePresets(ps);closeM();toast('Réinitialisé');render();}
+
+// ══════════════════════════════════════════
+// ADD PAST SESSION
+// ══════════════════════════════════════════
+function openAddPast(){const ps=gP();openM(`<div class="mt">Séance passée</div>
+  <div style="margin-bottom:9px"><label class="lbl">Date</label><input class="inp" type="date" id="pd" value="${new Date().toISOString().split('T')[0]}"></div>
+  <div style="margin-bottom:9px"><label class="lbl">Type</label><select class="inp" id="pt">${Object.entries(ps).map(([k,p])=>`<option value="${k}">${p.name}</option>`).join('')}<option value="_libre">Libre</option></select></div>
+  <div style="margin-bottom:9px"><label class="lbl">Durée (min)</label><input class="inp" type="number" id="pdu" placeholder="60" inputmode="numeric"></div>
+  <div style="margin-bottom:11px"><label class="lbl">Exercices</label><div style="max-height:190px;overflow-y:auto;border:1.5px solid var(--bd);border-radius:var(--rs);padding:5px">${EX.map(e=>`<label style="display:flex;align-items:center;gap:6px;padding:7px;cursor:pointer"><input type="checkbox" class="px" data-id="${e.id}" style="accent-color:var(--a)"><span style="font-size:12px;font-weight:500">${e.e} ${e.name}</span></label>`).join('')}</div></div>
+  <button class="btn bp bfull" onclick="savePast()">Enregistrer →</button>`);}
+function savePast(){const ds=document.getElementById('pd')?.value,tk=document.getElementById('pt')?.value;const dur=parseInt(document.getElementById('pdu')?.value)||60;const ids=[...document.querySelectorAll('.px:checked')].map(i=>i.dataset.id);if(!ds||!ids.length){toast('Remplis la date et au moins un exercice');return;}const ps=gP();const s={id:Date.now(),date:new Date(ds).getTime(),presetKey:tk,type:ps[tk]?.name||'Libre',duration:dur,exs:ids.map(id=>({id,sets:[{kg:'',reps:'',done:true}],note:''})),volume:0,sets:ids.length,prs:[],preSession:{},calories:dur*7};const ss=DB.sessions();ss.push(s);ss.sort((a,b)=>b.date-a.date);DB.saveSessions(ss);closeM();toast('Enregistrée !');render();}
+
+// ══════════════════════════════════════════
+// BODY TRACKING
+// ══════════════════════════════════════════
+function rBody(sc){
+  const b=DB.body();const prof=DB.profile();const entries=b.entries.sort((a,c)=>c.date-a.date);
+  const lw=entries.length?entries[0].weight:null;
+  const bmi=calcBMI(lw,b.height);
+  const goal=prof.goal||'maintain';
+  const kcal=prof.age&&lw&&b.height?calcTDEE(lw,b.height,prof.age,goal):null;
+  const macros=kcal?calcMacros(kcal,goal):null;
+  const firstW=entries.length>1?entries[entries.length-1].weight:null;
+  const diff=lw&&firstW?Math.round((lw-firstW)*10)/10:null;
+
+  sc.innerHTML=`<div style="padding:18px 15px" class="fade">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div class="ptitle">Corps</div>
+      <button class="btn bp bsm" onclick="openAddWeight()">+ Pesée</button>
+    </div>
+
+    <!-- PROFILE SETUP -->
+    <div class="card" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-weight:700;font-size:14px">Mon profil</div>
+        <button class="btn bg bxs" onclick="openProfile()">✏️ Modifier</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+        <div style="text-align:center"><div style="font-family:'DM Serif Display',serif;font-size:22px">${b.height||'—'}</div><div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.5px">cm</div></div>
+        <div style="text-align:center"><div style="font-family:'DM Serif Display',serif;font-size:22px">${lw||'—'}</div><div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.5px">kg</div></div>
+        <div style="text-align:center"><div style="font-family:'DM Serif Display',serif;font-size:22px;color:${bmiColor(bmi)}">${bmi||'—'}</div><div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.5px">IMC</div></div>
+      </div>
+      ${bmi?`<div style="margin-top:8px;text-align:center;font-size:12px;font-weight:600;color:${bmiColor(bmi)}">${bmiLabel(bmi)}</div>`:''}
+      ${diff!==null?`<div style="margin-top:8px;text-align:center;font-size:12px;color:var(--t2)">Depuis le début : <span style="font-weight:700;color:${diff<=0?'var(--a)':'var(--or)'}">${diff>0?'+':''}${diff} kg</span></div>`:''}
+    </div>
+
+    <!-- CALORIES -->
+    ${kcal?`<div class="card" style="margin-bottom:14px">
+      <div style="font-weight:700;font-size:14px;margin-bottom:10px">🔥 Apports journaliers recommandés</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div>
+          <div style="font-family:'DM Serif Display',serif;font-size:32px">${kcal}</div>
+          <div style="font-size:11px;color:var(--t2)">kcal/jour · Objectif : <span style="font-weight:700">${goal==='bulk'?'Prise de masse':goal==='cut'?'Sèche':'Maintien'}</span></div>
+        </div>
+        <button class="btn bg bxs" onclick="openProfile()">Changer</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+        <div style="background:var(--bll);border-radius:var(--rs);padding:10px;text-align:center"><div style="font-weight:800;font-size:18px;color:var(--bl)">${macros.prot}g</div><div style="font-size:10px;color:var(--bl);font-weight:600">Protéines</div></div>
+        <div style="background:var(--orl);border-radius:var(--rs);padding:10px;text-align:center"><div style="font-weight:800;font-size:18px;color:var(--or)">${macros.fat}g</div><div style="font-size:10px;color:var(--or);font-weight:600">Lipides</div></div>
+        <div style="background:var(--gol);border-radius:var(--rs);padding:10px;text-align:center"><div style="font-weight:800;font-size:18px;color:var(--go)">${macros.carb}g</div><div style="font-size:10px;color:var(--go);font-weight:600">Glucides</div></div>
+      </div>
+    </div>`:`<div class="card" style="margin-bottom:14px;border:1.5px dashed var(--bd2);box-shadow:none;cursor:pointer" onclick="openProfile()">
+      <div style="font-size:13px;font-weight:600;color:var(--t2)">🔥 Calculer mes calories</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:2px">Complète ton profil (âge, taille, objectif)</div>
+    </div>`}
+
+    <!-- WEIGHT CHART -->
+    ${entries.length>1?`<div class="slbl">Évolution du poids</div>
+    <div class="card" style="margin-bottom:14px"><div class="cw"><canvas id="cwt"></canvas></div></div>`:''}
+
+    <!-- WEIGHT HISTORY -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div class="slbl" style="margin-bottom:0">Pesées</div>
+    </div>
+    ${!entries.length?`<div class="flat" style="text-align:center;padding:28px"><div style="font-size:28px;margin-bottom:7px">⚖️</div><div style="font-size:13px;font-weight:600;color:var(--t2)">Ajoute ta première pesée</div></div>`:''}
+    ${entries.slice(0,15).map((en,i)=>{
+      const prev=entries[i+1];const d=prev?Math.round((en.weight-prev.weight)*10)/10:null;
+      return`<div class="bstat">
+        <div class="bstat-icon" style="background:var(--ax)">⚖️</div>
+        <div style="flex:1"><div style="font-weight:700;font-size:15px">${en.weight} kg</div><div style="font-size:11px;color:var(--t3)">${fD(en.date)}</div></div>
+        ${d!==null?`<div style="font-size:13px;font-weight:700;color:${d<=0?'var(--a)':'var(--or)'}">${d>0?'+':''}${d}kg</div>`:''}
+        <button onclick="delWeight(${en.date})" style="border:none;background:transparent;color:var(--t3);font-size:16px;cursor:pointer;padding:4px">✕</button>
+      </div>`;
+    }).join('')}
+  </div>`;
+
+  // Weight chart
+  if(entries.length>1){
+    const sorted=entries.slice().sort((a,c)=>a.date-c.date);
+    setTimeout(()=>{const c=document.getElementById('cwt');if(!c)return;new Chart(c,{type:'line',data:{labels:sorted.map(e=>fDs(e.date)),datasets:[{label:'Poids (kg)',data:sorted.map(e=>e.weight),borderColor:'#2D6A4F',backgroundColor:'rgba(45,106,79,.08)',borderWidth:2.5,tension:.35,pointBackgroundColor:'#2D6A4F',pointRadius:4,fill:true}]},options:{plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#A8A49E',font:{family:'DM Sans',size:9,weight:'600'}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#A8A49E',font:{family:'DM Sans',size:9,weight:'600'}},suggestedMin:Math.min(...sorted.map(e=>e.weight))-2,suggestedMax:Math.max(...sorted.map(e=>e.weight))+2}}}});},80);
+  }
+}
+
+function openAddWeight(){openM(`<div class="mt">Ajouter une pesée</div>
+  <div style="margin-bottom:11px"><label class="lbl">Date</label><input class="inp" type="date" id="wd" value="${new Date().toISOString().split('T')[0]}"></div>
+  <div style="margin-bottom:14px"><label class="lbl">Poids (kg)</label><input class="inp" type="number" id="ww" placeholder="75.5" inputmode="decimal" step="0.1"></div>
+  <div style="margin-bottom:14px"><label class="lbl">Note (optionnel)</label><input class="inp" id="wn" placeholder="Ex: après le sport, à jeun…"></div>
+  <button class="btn bp bfull" onclick="saveWeight()">Enregistrer →</button>`);}
+function saveWeight(){const ds=document.getElementById('wd')?.value;const ww=parseFloat(document.getElementById('ww')?.value);const note=document.getElementById('wn')?.value||'';if(!ds||!ww){toast('Remplis la date et le poids');return;}const b=DB.body();b.entries.push({date:new Date(ds).getTime(),weight:ww,note});DB.saveBody(b);closeM();toast('Pesée enregistrée !');render();}
+function delWeight(date){const b=DB.body();b.entries=b.entries.filter(e=>e.date!==date);DB.saveBody(b);render();}
+function openProfile(){const b=DB.body();const prof=DB.profile();openM(`<div class="mt">Mon profil</div>
+  <div style="margin-bottom:9px"><label class="lbl">Prénom (optionnel)</label><input class="inp" id="pfn" value="${prof.name||''}" placeholder="Ton prénom"></div>
+  <div style="margin-bottom:9px"><label class="lbl">Âge</label><input class="inp" type="number" id="pfa" value="${prof.age||''}" placeholder="25" inputmode="numeric"></div>
+  <div style="margin-bottom:9px"><label class="lbl">Taille (cm)</label><input class="inp" type="number" id="pfh" value="${b.height||''}" placeholder="180" inputmode="numeric"></div>
+  <div style="margin-bottom:14px"><label class="lbl">Objectif</label>
+    <select class="inp" id="pfg">
+      <option value="maintain" ${prof.goal==='maintain'?'selected':''}>Maintien du poids</option>
+      <option value="bulk" ${prof.goal==='bulk'?'selected':''}>Prise de masse (+300 kcal)</option>
+      <option value="cut" ${prof.goal==='cut'?'selected':''}>Sèche (-400 kcal)</option>
+    </select>
+  </div>
+  <button class="btn bp bfull" onclick="saveProfile()">Sauvegarder →</button>`);}
+function saveProfile(){const b=DB.body();b.height=parseInt(document.getElementById('pfh')?.value)||b.height;DB.saveBody(b);DB.saveProfile({name:document.getElementById('pfn')?.value||'',age:parseInt(document.getElementById('pfa')?.value)||0,goal:document.getElementById('pfg')?.value||'maintain'});closeM();toast('Profil mis à jour !');render();}
+
+// ══════════════════════════════════════════
+// HISTORIQUE
+// ══════════════════════════════════════════
+function rHist(sc){const ss=DB.sessions();
+  sc.innerHTML=`<div style="padding:18px 15px" class="fade">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div class="ptitle">Historique</div>
+      <div style="display:flex;gap:5px"><button class="btn bg bsm" onclick="openAddPast()">📥 Passée</button><button class="btn bg bsm" onclick="openImport()">📋 Importer</button></div>
+    </div>
+    ${!ss.length?`<div class="flat" style="text-align:center;padding:36px"><div style="font-size:30px;margin-bottom:6px">📋</div><div style="font-size:13px;font-weight:600;color:var(--t2)">Aucune séance</div></div>`:''}
+    ${ss.map(s=>hItem(s)).join('')}
+  </div>`;}
+function hItem(s,c=false){return`<div class="hi" onclick="openSD(${s.id})"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px"><div><div style="font-family:'DM Serif Display',serif;font-size:${c?'14':'15'}px;margin-bottom:1px">${s.type}</div><div style="font-size:10px;color:var(--t3);font-weight:500">${fD(s.date)}</div></div><div style="text-align:right"><div style="font-size:13px;font-weight:700;color:var(--a)">${s.volume}kg</div><div style="font-size:10px;color:var(--t3)">${s.duration}min</div></div></div><div style="display:flex;flex-wrap:wrap;gap:3px"><span class="chip cb">💪 ${s.sets}</span><span class="chip co">🔥 ${s.calories}kcal</span>${s.prs?.length?`<span class="chip cgo">🏆 ${s.prs.length} PR</span>`:''}</div></div>`;}
+function openSD(id){const s=DB.sessions().find(x=>x.id===id);if(!s)return;openM(`<div style="font-family:'DM Serif Display',serif;font-size:19px;margin-bottom:2px">${s.type}</div><div style="font-size:11px;color:var(--t3);margin-bottom:11px">${fD(s.date)}</div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-bottom:11px"><div class="sb" style="padding:9px"><div class="sv" style="font-size:20px">${s.duration}</div><div class="sl">min</div></div><div class="sb" style="padding:9px"><div class="sv" style="font-size:20px">${s.volume}</div><div class="sl">kg</div></div></div>${s.prs?.length?`<div style="background:var(--gol);border-radius:var(--rs);padding:8px;margin-bottom:9px"><div style="font-weight:700;color:var(--go);font-size:11px;margin-bottom:2px">🏆 Records</div>${s.prs.map(p=>`<div style="font-size:11px">${gEx(p.id).name} — ${p.kg}kg × ${p.reps}</div>`).join('')}</div>`:''}<div style="max-height:320px;overflow-y:auto">${s.exs.map(ex=>{const e=gEx(ex.id);const done=ex.sets.filter(s=>s.done);return`<div style="margin-bottom:6px;padding:9px;background:var(--bg2);border-radius:var(--rs)"><div style="font-weight:700;font-size:12px;margin-bottom:3px">${e.e} ${e.name}</div>${done.map((set,i)=>`<div style="font-size:11px;color:var(--t2)">Série ${i+1}: ${set.kg?set.kg+'kg':'—'} × ${set.reps||'—'}</div>`).join('')}${!done.length?`<div style="font-size:10px;color:var(--t3)">Aucune série</div>`:''}${ex.note?`<div style="font-size:10px;color:var(--t3);margin-top:2px">📝 ${ex.note}</div>`:''}</div>`;}).join('')}</div><button class="btn bd_ bfull bsm" style="margin-top:8px" onclick="delS(${s.id})">Supprimer</button>`);}
+function delS(id){DB.saveSessions(DB.sessions().filter(s=>s.id!==id));closeM();toast('Supprimée');render();}
+
+// ══════════════════════════════════════════
+// STATS
+// ══════════════════════════════════════════
+let pChart=null;
+function rStats(sc){
+  const ss=DB.sessions();
+  const mc={};ss.forEach(s=>s.exs.forEach(ex=>{const m=gEx(ex.id).muscle;mc[m]=(mc[m]||0)+1;}));
+  const wv=[];for(let i=7;i>=0;i--){const st=Date.now()-(i+1)*7*86400000,en=Date.now()-i*7*86400000;const v=ss.filter(s=>s.date>=st&&s.date<en).reduce((t,s)=>t+(s.volume||0),0);wv.push({l:i===0?'Cette sem':i===1?'Sem-1':'S-'+i,v});}
+  const ev={};ss.forEach(s=>s.exs.forEach(ex=>{const v=ex.sets.filter(s=>s.done).reduce((t,s)=>t+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0);ev[ex.id]=(ev[ex.id]||0)+v;}));
+  const topEx=Object.entries(ev).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const tIds=[...new Set(ss.flatMap(s=>s.exs.map(e=>e.id)))];
+  // Monthly sessions
+  const monthly=[];for(let i=5;i>=0;i--){const d=new Date();d.setMonth(d.getMonth()-i);const m=d.getMonth(),y=d.getFullYear();const cnt=ss.filter(s=>{const sd=new Date(s.date);return sd.getMonth()===m&&sd.getFullYear()===y;}).length;monthly.push({l:d.toLocaleDateString('fr-FR',{month:'short'}),cnt});}
+
+  sc.innerHTML=`<div style="padding:18px 15px" class="fade">
+    <div class="ptitle" style="margin-bottom:14px">Statistiques</div>
+    <div class="slbl">Vue globale</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:18px">
+      <div class="sb"><div class="sv">${ss.length}</div><div class="sl">Séances</div></div>
+      <div class="sb"><div class="sv">${ss.reduce((t,s)=>t+(s.duration||0),0)}</div><div class="sl">Minutes</div></div>
+      <div class="sb"><div class="sv">${(ss.reduce((t,s)=>t+(s.volume||0),0)/1000).toFixed(1)}t</div><div class="sl">Volume total</div></div>
+      <div class="sb"><div class="sv">${ss.reduce((t,s)=>t+(s.prs?.length||0),0)}</div><div class="sl">PRs 🏆</div></div>
+    </div>
+
+    ${wv.some(w=>w.v>0)?`<div class="slbl">Volume hebdomadaire (kg)</div><div class="card" style="margin-bottom:16px"><div class="cw"><canvas id="cv"></canvas></div></div>`:''}
+    ${monthly.some(m=>m.cnt>0)?`<div class="slbl">Séances par mois</div><div class="card" style="margin-bottom:16px"><div class="cw"><canvas id="cm2"></canvas></div></div>`:''}
+    ${Object.keys(mc).length?`
+    <div class="slbl">Équilibre musculaire</div>
+    <div class="card" style="margin-bottom:16px">
+      <p style="font-size:11px;color:var(--t2);margin-bottom:10px">Mois en cours <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:rgba(45,106,79,.6);margin-left:4px;margin-right:8px;vertical-align:middle"></span> vs moyenne globale <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:rgba(44,95,138,.35);margin-left:4px;vertical-align:middle"></span></p>
+      <div style="position:relative;height:260px"><canvas id="cm-radar"></canvas></div>
+    </div>
+    <div class="slbl">Détail par muscle (séries)</div>
+    <div class="card" style="margin-bottom:16px"><div style="position:relative;height:${Math.max(160, Object.keys(mc).filter(m=>m!=='Mollets').length*28)}px"><canvas id="cm"></canvas></div></div>`:''}
+
+    ${tIds.length?`<div class="slbl">Progression par exercice</div>
+    <div class="card" style="margin-bottom:16px">
+      <div style="margin-bottom:9px"><label class="lbl">Exercice</label>
+        <select class="inp" id="ep" onchange="rExProg(this.value)">${tIds.map(id=>`<option value="${id}">${gEx(id).e} ${gEx(id).name}</option>`).join('')}</select>
+      </div>
+      <div class="cw"><canvas id="cprog"></canvas></div>
+      <div id="epd" style="margin-top:7px;font-size:11px;color:var(--t2)"></div>
+    </div>`:''}
+
+    <!-- PERSONAL RECORDS -->
+    ${tIds.length?`<div class="slbl">Records personnels</div>
+    <div class="card" style="margin-bottom:16px">
+      ${tIds.filter(id=>best1RM(id)>0).sort((a,b)=>best1RM(b)-best1RM(a)).slice(0,8).map(id=>{
+        const rm=best1RM(id);const e=gEx(id);
+        const hist=gLS(id,1);const lastKg=hist.length?Math.max(...hist[0].sets.filter(s=>s.done).map(s=>parseFloat(s.kg)||0)):0;
+        return`<div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--bg2)">
+          <div class="ei" style="width:32px;height:32px;font-size:15px">${e.e}</div>
+          <div style="flex:1"><div style="font-size:13px;font-weight:600">${e.name}</div><div style="font-size:10px;color:var(--t3)">${lastKg}kg dernièrement</div></div>
+          <div style="text-align:right"><div style="font-size:13px;font-weight:700;color:var(--go)">~${rm}kg</div><div style="font-size:9px;color:var(--t3)">1RM est.</div></div>
+        </div>`;
+      }).join('')}
+    </div>`:''}
+
+    ${topEx.length?`<div class="slbl">Top exercices (volume)</div>
+    <div class="card" style="margin-bottom:16px">
+      ${topEx.map(([id,v])=>{const mx=topEx[0][1];return`<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;margin-bottom:2px"><span style="font-size:12px;font-weight:600">${gEx(id).e} ${gEx(id).name}</span><span style="font-size:12px;font-weight:700;color:var(--a)">${Math.round(v/1000).toFixed(1)}t</span></div><div class="pb" style="height:4px"><div class="pf" style="width:${Math.round((v/mx)*100)}%;background:var(--a)"></div></div></div>`;}).join('')}
+    </div>`:''}
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:20px;margin-top:14px">
+      <button class="btn bg" onclick="expD()">📤 Exporter</button>
+      <button class="btn bd_" onclick="confReset()">🗑 Reset</button>
+    </div>
+  </div>`;
+
+  const co={plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#A8A49E',font:{family:'DM Sans',size:9,weight:'600'}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#A8A49E',font:{family:'DM Sans',size:9,weight:'600'}}}}};
+  setTimeout(()=>{
+    if(wv.some(w=>w.v>0)){const c=document.getElementById('cv');if(c)new Chart(c,{type:'bar',data:{labels:wv.map(w=>w.l),datasets:[{data:wv.map(w=>w.v),backgroundColor:'rgba(45,106,79,.12)',borderColor:'#2D6A4F',borderWidth:2,borderRadius:4,borderSkipped:false}]},options:co});}
+    if(monthly.some(m=>m.cnt>0)){const c=document.getElementById('cm2');if(c)new Chart(c,{type:'bar',data:{labels:monthly.map(m=>m.l),datasets:[{data:monthly.map(m=>m.cnt),backgroundColor:'rgba(44,95,138,.12)',borderColor:'#2C5F8A',borderWidth:2,borderRadius:4,borderSkipped:false}]},options:co});}
+
+    if(Object.keys(mc).length){
+      // RADAR — 9 muscles, no Mollets
+      const radarMuscles=['Pectoraux','Dos','Épaules','Biceps','Triceps','Quadriceps','Ischio-jambiers','Fessiers','Abdominaux'];
+      const now=Date.now();
+      const monthSess=ss.filter(s=>now-s.date<30*86400000);
+      const mcMonth={};monthSess.forEach(s=>s.exs.forEach(ex=>{const m=gEx(ex.id).muscle;mcMonth[m]=(mcMonth[m]||0)+1;}));
+      const globalMax=Math.max(...radarMuscles.map(m=>mc[m]||0),1);
+      const monthMax=Math.max(...radarMuscles.map(m=>mcMonth[m]||0),1);
+      const globalData=radarMuscles.map(m=>Math.round(((mc[m]||0)/globalMax)*100));
+      const monthData=radarMuscles.map(m=>Math.round(((mcMonth[m]||0)/monthMax)*100));
+      const cr=document.getElementById('cm-radar');
+      if(cr)new Chart(cr,{type:'radar',data:{labels:radarMuscles,datasets:[
+        {label:'Ce mois',data:monthData,borderColor:'rgba(45,106,79,.9)',backgroundColor:'rgba(45,106,79,.15)',borderWidth:2.5,pointBackgroundColor:'#2D6A4F',pointRadius:4,pointHoverRadius:6},
+        {label:'Globale',data:globalData,borderColor:'rgba(44,95,138,.6)',backgroundColor:'rgba(44,95,138,.08)',borderWidth:1.5,pointBackgroundColor:'#2C5F8A',pointRadius:3,borderDash:[4,3]},
+      ]},options:{plugins:{legend:{display:false}},scales:{r:{min:0,max:100,grid:{color:'rgba(0,0,0,.08)'},angleLines:{color:'rgba(0,0,0,.08)'},ticks:{display:false},pointLabels:{color:'#1A1814',font:{family:'DM Sans',size:11,weight:'600'}}}}}});
+
+      // HORIZONTAL BAR — no Mollets
+      const cls=['#2D6A4F','#2C5F8A','#C0392B','#E07B39','#6B4FA0','#B8860B','#40916C','#1A6B8A','#8A2D2D','#4F6B4F'];
+      const filtered=Object.entries(mc).filter(([m])=>m!=='Mollets').sort((a,b)=>b[1]-a[1]);
+      const cb=document.getElementById('cm');
+      if(cb)new Chart(cb,{type:'bar',data:{labels:filtered.map(e=>e[0]),datasets:[{data:filtered.map(e=>e[1]),backgroundColor:filtered.map((_,i)=>cls[i%cls.length]+'33'),borderColor:filtered.map((_,i)=>cls[i%cls.length]),borderWidth:2,borderRadius:6,borderSkipped:false}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#A8A49E',font:{family:'DM Sans',size:9,weight:'600'}}},y:{grid:{display:false},ticks:{color:'#1A1814',font:{family:'DM Sans',size:11,weight:'600'}}}}}});
+    }
+
+    if(tIds.length)rExProg(tIds[0]);
+    document.querySelectorAll('.pf').forEach(el=>{const w=el.style.width;el.style.width='0';setTimeout(()=>el.style.width=w,80);});
+  },80);
+}
+
+function rExProg(id){
+  const data=DB.sessions().filter(s=>s.exs.some(e=>e.id===id)).slice(0,25).reverse().map(s=>{
+    const sets=s.exs.find(e=>e.id===id)?.sets.filter(s=>s.done)||[];
+    const maxKg=sets.reduce((m,s)=>Math.max(m,parseFloat(s.kg)||0),0);
+    const rm=sets.reduce((m,s)=>Math.max(m,c1RM(parseFloat(s.kg)||0,parseInt(s.reps)||0)),0);
+    return{date:fDs(s.date),kg:maxKg,rm};
+  });
+  const ctx=document.getElementById('cprog');if(!ctx)return;
+  if(pChart)pChart.destroy();
+  pChart=new Chart(ctx,{type:'line',data:{labels:data.map(d=>d.date),datasets:[{label:'Charge max (kg)',data:data.map(d=>d.kg),borderColor:'#2D6A4F',backgroundColor:'rgba(45,106,79,.08)',borderWidth:2.5,tension:.35,pointBackgroundColor:'#2D6A4F',pointRadius:4,fill:true},{label:'1RM estimée',data:data.map(d=>d.rm),borderColor:'#B8860B',backgroundColor:'transparent',borderWidth:1.5,tension:.35,pointBackgroundColor:'#B8860B',pointRadius:3,borderDash:[4,4]}]},options:{plugins:{legend:{display:true,labels:{color:'#6B6760',font:{family:'DM Sans',size:10,weight:'600'},padding:8}}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#A8A49E',font:{family:'DM Sans',size:9,weight:'600'}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#A8A49E',font:{family:'DM Sans',size:9,weight:'600'}}}}}});
+  if(data.length){const l=data[data.length-1];const f=data[0];const df=Math.round((l.kg-f.kg)*10)/10;const ep=document.getElementById('epd');if(ep)ep.innerHTML=`<strong>${l.kg}kg</strong> max actuel · 1RM ~<strong style="color:var(--go)">${l.rm}kg</strong> · Progression : <strong style="color:${df>=0?'var(--a)':'var(--red)'}">${df>=0?'+':''}${df}kg</strong>`;}
+}
+
+// ══════════════════════════════════════════
+// OBJECTIFS PAGE
+// ══════════════════════════════════════════
+function rObjectifs(sc){
+  const goals=DB.goals();
+  sc.innerHTML=`<div style="padding:18px 15px" class="fade">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div class="ptitle">Objectifs</div>
+      <button class="btn bp bsm" onclick="openAG()">+ Objectif</button>
+    </div>
+    <p style="font-size:12px;color:var(--t2);font-style:italic;margin-bottom:18px">Définis une charge cible, un nombre de reps ou une 1RM à atteindre sur un exercice. L'app suit ta progression automatiquement.</p>
+    ${!goals.length?`<div class="flat" style="text-align:center;padding:44px 16px">
+      <div style="font-size:44px;margin-bottom:10px">🎯</div>
+      <div style="font-size:14px;font-weight:700;color:var(--t2)">Aucun objectif</div>
+      <div style="font-size:12px;color:var(--t3);margin-top:5px;line-height:1.5">Ex : Tractions lestées 20kg · Pec fly 80kg<br>Faire 15 tractions · Leg extension 100kg</div>
+      <button class="btn bp" style="margin-top:16px" onclick="openAG()">Créer mon premier objectif</button>
+    </div>`:''}
+    ${goals.map((g,i)=>{
+      const ex=gEx(g.exId);
+      const pct=Math.min(100,Math.round(((g.current||0)/g.target)*100));
+      const done=pct>=100;
+      const remaining=g.type==='reps'?Math.max(0,g.target-(g.current||0))+' reps restantes':Math.max(0,Math.round((g.target-(g.current||0))*10)/10)+'kg restants';
+      const typeLabel=g.type==='1rm'?'1RM estimée':g.type==='reps'?'Reps max':'Charge à la série';
+      const barColor=done?'#2D6A4F':pct>66?'#40916C':pct>33?'#E07B39':'#C0392B';
+      return`<div class="card" style="margin-bottom:12px${done?';border-left:4px solid var(--a)':''}">
+        <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px">
+          <div style="width:44px;height:44px;border-radius:10px;background:${done?'var(--al)':'var(--bg2)'};display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">${ex.e}</div>
+          <div style="flex:1">
+            <div style="font-family:'DM Serif Display',serif;font-size:17px;margin-bottom:2px">${ex.name}</div>
+            <div style="font-size:11px;color:var(--t2)">${typeLabel}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+            ${done?`<span class="chip cg" style="font-size:10px">✓ Atteint !</span>`:`<span style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--t)">${pct}%</span>`}
+            <button onclick="delG(${i})" style="border:none;background:transparent;color:var(--t3);font-size:14px;cursor:pointer;padding:2px">✕</button>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <div style="text-align:center;flex:1">
+            <div style="font-family:'DM Serif Display',serif;font-size:20px;color:${barColor}">${g.current||0}<span style="font-size:12px;font-weight:600">${g.type==='reps'?' reps':' kg'}</span></div>
+            <div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Actuel</div>
+          </div>
+          <div style="width:1px;background:var(--bd);margin:4px 0"></div>
+          <div style="text-align:center;flex:1">
+            <div style="font-family:'DM Serif Display',serif;font-size:20px;color:var(--a2)">${g.target}<span style="font-size:12px;font-weight:600">${g.type==='reps'?' reps':' kg'}</span></div>
+            <div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Objectif</div>
+          </div>
+          <div style="width:1px;background:var(--bd);margin:4px 0"></div>
+          <div style="text-align:center;flex:1">
+            <div style="font-family:'DM Serif Display',serif;font-size:20px;color:var(--t2)">${done?'0':Math.max(0,g.type==='reps'?g.target-(g.current||0):Math.round((g.target-(g.current||0))*10)/10)}<span style="font-size:12px;font-weight:600">${g.type==='reps'?' reps':' kg'}</span></div>
+            <div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Restant</div>
+          </div>
+        </div>
+        <div class="pb" style="height:8px;margin-bottom:6px"><div class="pf" style="width:${pct}%;background:${barColor}"></div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:10px;color:var(--t3)">${typeLabel}</span>
+          ${g.note?`<span style="font-size:10px;color:var(--t3)">📝 ${g.note}</span>`:''}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+  setTimeout(()=>document.querySelectorAll('.pf').forEach(el=>{const w=el.style.width;el.style.width='0';setTimeout(()=>el.style.width=w,80);}),80);
+}
+
+
+function rGoalsInline(){
+  const goals=DB.goals();
+  if(!goals.length)return`<div class="flat" style="text-align:center;padding:20px;margin-bottom:10px"><div style="font-size:12px;color:var(--t3)">Aucun objectif. Appuie sur + pour en créer.</div></div>`;
+  return goals.map((g,i)=>{
+    const ex=gEx(g.exId);const pct=Math.min(100,Math.round(((g.current||0)/g.target)*100));
+    const done=pct>=100;
+    return`<div class="card" style="margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px">
+        <div class="ei" style="width:34px;height:34px;font-size:16px">${ex.e}</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700">${ex.name}</div>
+          <div style="font-size:11px;color:var(--t2)">Objectif ${g.type==='1rm'?'1RM':g.type==='reps'?'reps max':'charge'} : ${g.target}${g.type==='reps'?' reps':' kg'}</div>
+        </div>
+        <div style="text-align:right"><div style="font-family:'DM Serif Display',serif;font-size:18px;color:${done?'var(--a)':'var(--t)'}">${pct}%</div></div>
+        <button onclick="delG(${i})" style="border:none;background:transparent;color:var(--t3);font-size:15px;cursor:pointer;padding:2px">✕</button>
+      </div>
+      <div class="pb" style="height:6px"><div class="pf" style="width:${pct}%;background:${done?'var(--a)':'linear-gradient(90deg,var(--a2),var(--a))'}"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px"><span style="font-size:10px;color:var(--t3)">Actuel : ${g.current||0}${g.type==='reps'?' reps':' kg'}</span><span style="font-size:10px;color:var(--t3)">Cible : ${g.target}${g.type==='reps'?' reps':' kg'}</span></div>
+      ${g.note?`<div style="font-size:10px;color:var(--t3);margin-top:4px">📝 ${g.note}</div>`:''}
+    </div>`;
+  }).join('');
+}
+function openAG(){openM(`<div class="mt">Nouvel objectif</div>
+  <div style="margin-bottom:9px"><label class="lbl">Exercice</label><select class="inp" id="ge">${EX.map(e=>`<option value="${e.id}">${e.e} ${e.name} · ${e.muscle}</option>`).join('')}</select></div>
+  <div style="margin-bottom:9px"><label class="lbl">Type</label><select class="inp" id="gt"><option value="1rm">1RM estimée (kg)</option><option value="reps">Reps max</option><option value="kg">Charge à la série (kg)</option></select></div>
+  <div style="margin-bottom:9px"><label class="lbl">Valeur cible</label><input class="inp" type="number" id="gv" placeholder="Ex: 20" inputmode="decimal"></div>
+  <div style="margin-bottom:14px"><label class="lbl">Note (optionnel)</label><input class="inp" id="gn" placeholder="Ex: d'ici 3 mois"></div>
+  <button class="btn bp bfull" onclick="saveG()">Ajouter →</button>`);}
+function saveG(){const exId=document.getElementById('ge')?.value,type=document.getElementById('gt')?.value;const target=parseFloat(document.getElementById('gv')?.value);const note=document.getElementById('gn')?.value||'';if(!exId||!target){toast('Remplis tous les champs');return;}const current=type==='1rm'?best1RM(exId):type==='reps'?DB.sessions().flatMap(s=>s.exs.filter(e=>e.id===exId).flatMap(e=>e.sets.filter(s=>s.done).map(s=>parseInt(s.reps)||0))).reduce((m,v)=>Math.max(m,v),0):0;const goals=DB.goals();goals.push({exId,type,target,current,note,created:Date.now()});DB.saveGoals(goals);closeM();toast('Objectif ajouté !');go('objectifs');}
+function delG(i){const g=DB.goals();g.splice(i,1);DB.saveGoals(g);render();toast('Supprimé');}
+
+// ══════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════
+function expD(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({sessions:DB.sessions(),goals:DB.goals(),body:DB.body(),profile:DB.profile()},null,2)],{type:'application/json'}));a.download='fitpro_export.json';a.click();}
+function confReset(){openM(`<div class="mt">⚠️ Réinitialiser ?</div><p style="color:var(--t2);margin-bottom:14px;font-size:12px">Toutes tes données seront supprimées.</p><button class="btn bd_ bfull" style="margin-bottom:5px" onclick="doReset()">Oui, tout supprimer</button><button class="btn bg bfull" onclick="closeM()">Annuler</button>`);}
+function doReset(){['sessions','goals','presets','settings','imp','body','profile'].forEach(k=>localStorage.removeItem('fp4_'+k));closeM();toast('Réinitialisé');render();}
+
+// ══════════════════════════════════════════
+// MODAL
+// ══════════════════════════════════════════
+function openM(html){document.getElementById('mc').innerHTML=html;document.getElementById('mo').classList.add('open');}
+function closeM(){document.getElementById('mo').classList.remove('open');}
+function closeMO(e){if(e.target===document.getElementById('mo'))closeM();}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+initImport();
+render();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
+</script>
+</body>
+</html>
