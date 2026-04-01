@@ -255,7 +255,7 @@ const fT=s=>Math.floor(s/60)+':'+(s%60<10?'0':'')+(s%60);
 const c1RM=(kg,reps)=>reps<=0?0:reps===1?kg:Math.round(kg*(1+reps/30)*10)/10;
 function toast(m,dur=2500){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 function gLS(id,n=3){return DB.sessions().filter(s=>s.exs.some(e=>e.id===id)).slice(0,n).map(s=>({date:s.date,sets:s.exs.find(e=>e.id===id).sets}));}
-function sugKg(id){const h=gLS(id,1);if(!h.length)return null;const d=h[0].sets.filter(s=>s.done);if(!d.length)return null;const mx=Math.max(...d.map(s=>parseFloat(s.kg)||0));return d.every(s=>s.done)?mx+2.5:mx;}
+function sugKg(id){const h=gLS(id,1);if(!h.length)return null;const d=h[0].sets.filter(s=>s.done);if(!d.length)return null;if(!d.every(s=>(parseInt(s.reps)||0)>=11))return null;const mx=Math.max(...d.map(s=>parseFloat(s.kg)||0));return mx+2.5;}
 function best1RM(id){return DB.sessions().flatMap(s=>s.exs.filter(e=>e.id===id).flatMap(e=>e.sets.filter(s=>s.done).map(s=>c1RM(parseFloat(s.kg)||0,parseInt(s.reps)||0)))).reduce((m,v)=>Math.max(m,v),0)||0;}
 function mDays(){const r={},n=Date.now();DB.sessions().forEach(s=>{s.exs.forEach(ex=>{gEx(ex.id).muscle.split(' · ').forEach(m=>{const d=Math.floor((n-s.date)/86400000);if(!(m in r)||r[m]>d)r[m]=d;});});});return r;}
 function rc(d){return d===undefined||d>4?'green':d>=2?'orange':'red';}
