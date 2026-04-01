@@ -177,7 +177,9 @@ const EX=[
   {id:'dips',name:'Dips',muscle:'Pectoraux',eq:'Poids du corps',e:'🤸'},
   {id:'dips_weighted',name:'Dips lestés',muscle:'Pectoraux',eq:'Poids du corps',e:'🤸'},
   {id:'dips_assisted',name:'Dips assistés',muscle:'Pectoraux',eq:'Machine',e:'🤸'},
-  {id:'ohp',name:'Développé militaire',muscle:'Épaules',eq:'Barre',e:'🎯'},
+  {id:'ohp',name:'Développé militaire barre',muscle:'Épaules',eq:'Barre',e:'🎯'},
+  {id:'ohp_db',name:'Développé militaire haltères',muscle:'Épaules',eq:'Haltères',e:'🎯'},
+  {id:'ohp_machine',name:'Presse épaules machine',muscle:'Épaules',eq:'Machine',e:'🤖'},
   {id:'lat_raise',name:'Élévations latérales',muscle:'Épaules',eq:'Haltères',e:'🦅'},
   {id:'lat_raise_cable',name:'Élévations latérales poulie',muscle:'Épaules',eq:'Machine',e:'🦅'},
   {id:'rear_delt_machine',name:'Machine arrière épaule',muscle:'Épaules',eq:'Machine',e:'😤'},
@@ -197,6 +199,8 @@ const EX=[
   {id:'dip_tri',name:'Dips triceps',muscle:'Triceps',eq:'Poids du corps',e:'🤸'},
   {id:'squat',name:'Squat barre',muscle:'Quadriceps',eq:'Barre',e:'🏋️'},
   {id:'squat_smith',name:'Squat guidé (Smith)',muscle:'Quadriceps',eq:'Machine',e:'🏋️'},
+  {id:'squat_machine',name:'Squat machine (Hack)',muscle:'Quadriceps',eq:'Machine',e:'🏋️'},
+  {id:'pistol_squat',name:'Pistol Squat',muscle:'Quadriceps',eq:'Poids du corps',e:'🦵'},
   {id:'leg_press_uni',name:'Presse unilatérale',muscle:'Quadriceps',eq:'Machine',e:'🦵'},
   {id:'lunges',name:'Fentes',muscle:'Quadriceps',eq:'Haltères',e:'🚶'},
   {id:'bulgarian_squat',name:'Bulgarian split squat',muscle:'Quadriceps',eq:'Poids du corps',e:'🏋️'},
@@ -234,7 +238,7 @@ const gP=()=>DB.presets()||JSON.parse(JSON.stringify(DP));
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
-let pg='home',wo=null,woI=null,rI=null,svs={e:3,s:3};
+let pg='home',wo=null,woI=null,rI=null,rEndTime=0,rTotal=0,svs={e:3,s:3};
 
 // ══════════════════════════════════════════
 // HELPERS
@@ -655,7 +659,7 @@ function startCF(){openM(`<div class="mt">Séance libre</div>
   </div>
   <button class="btn bp bfull" onclick="lCust()">Commencer →</button>`);}
 function lCust(){const name=document.getElementById('cn')?.value||'Séance libre';const ids=allEx().filter(e=>document.getElementById('ce-'+e.id)?.checked).map(e=>e.id);if(!ids.length){toast('Sélectionne au moins un exercice');return;}const ps=gP();ps['_custom']={name,color:'#2D6A4F',muscles:'Personnalisé',exs:ids};DB.savePresets(ps);closeM();lW('_custom');}
-function lW(k){closeM();const p=gP()[k];const defRest=DB.settings().rest||90;wo={k,type:p.name,exs:p.exs.map(id=>({id,sets:[{kg:'',reps:'',done:false}],note:'',rest:defRest,bw:false})),startTime:Date.now(),pre:{e:svs.e,s:svs.s,pain:document.getElementById('pp')?.value||''},prs:[]};document.getElementById('wt').textContent=p.name;document.getElementById('wo').classList.add('open');rWoBody();if(woI)clearInterval(woI);woI=setInterval(()=>{const el=Date.now()-wo.startTime;const m=Math.floor(el/60000),s=Math.floor((el%60000)/1000);const e=document.getElementById('wc');if(e)e.textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;uWoF();},1000);}
+function lW(k){closeM();if('Notification'in window&&Notification.permission==='default')Notification.requestPermission();const p=gP()[k];const defRest=DB.settings().rest||90;wo={k,type:p.name,exs:p.exs.map(id=>({id,sets:[{kg:'',reps:'',done:false}],note:'',rest:defRest,bw:false})),startTime:Date.now(),pre:{e:svs.e,s:svs.s,pain:document.getElementById('pp')?.value||''},prs:[]};document.getElementById('wt').textContent=p.name;document.getElementById('wo').classList.add('open');rWoBody();if(woI)clearInterval(woI);woI=setInterval(()=>{const el=Date.now()-wo.startTime;const m=Math.floor(el/60000),s=Math.floor((el%60000)/1000);const e=document.getElementById('wc');if(e)e.textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;uWoF();},1000);}
 
 // ══════════════════════════════════════════
 // WORKOUT
@@ -679,6 +683,7 @@ function rWoBody(){const body=document.getElementById('wob');if(!body||!wo)retur
         <button class="btn bg bxs" onclick="addSet(${ei})">+ Série</button>
         <button class="btn bg bxs" onclick="repEx(${ei})">🔄 Changer</button>
         <button class="btn bg bxs" id="rest-btn-${ei}" onclick="setExRest(${ei})">⏱ ${ex.rest||DB.settings().rest||90}s</button>
+        <button class="btn bd_ bxs" onclick="remEx(${ei})">✕ Retirer</button>
       </div>
       <input class="inp" style="margin-top:5px;font-size:11px;padding:7px 9px" placeholder="Note…" value="${ex.note||''}" oninput="wo.exs[${ei}].note=this.value">
       <div class="div" style="margin-top:10px"></div>
@@ -691,11 +696,12 @@ function addSet(ei){if(!wo)return;const ex=wo.exs[ei];const last=ex.sets[ex.sets
 let _exCB=null;
 function exListHTML(list){return list.length?list.map(e=>`<div class="er" onclick="_exCB('${e.id}')"><div class="ei">${e.e}</div><div><div style="font-weight:600;font-size:13px">${e.name}</div><div style="font-size:10px;color:var(--t2)">${e.muscle}</div></div></div>`).join(''):`<div style="padding:24px;text-align:center;color:var(--t3);font-size:13px">Aucun résultat</div>`;}
 function filterExList(q){const f=allEx().filter(e=>!q||e.name.toLowerCase().includes(q.toLowerCase())||e.muscle.toLowerCase().includes(q.toLowerCase()));const el=document.getElementById('exlist');if(el)el.innerHTML=exListHTML(f);}
-function exSearchModal(title,cb){_exCB=cb;return`<div class="mt">${title}</div><input class="inp" placeholder="🔍 Rechercher un exercice…" oninput="filterExList(this.value)" style="margin-bottom:8px"><div id="exlist" style="max-height:380px;overflow-y:auto">${exListHTML(allEx())}</div>`;}
+function exSearchModal(title,cb){_exCB=cb;return`<div class="mt">${title}</div><input class="inp" placeholder="🔍 Rechercher un exercice…" oninput="filterExList(this.value)" style="margin-bottom:8px"><div id="exlist" style="max-height:330px;overflow-y:auto;margin-bottom:8px">${exListHTML(allEx())}</div><button class="btn bg bfull bsm" onclick="closeM();openCreateEx()">✚ Créer un exercice</button>`;}
 function repEx(ei){openM(exSearchModal('Changer l\'exercice',id=>doRep(ei,id)));}
 function doRep(ei,id){if(!wo)return;wo.exs[ei]={id,sets:[{kg:'',reps:'',done:false}],note:'',rest:wo.exs[ei]?.rest||DB.settings().rest||90,bw:false};closeM();rWoBody();toast(gEx(id).name+' !');}
 function addExMid(){openM(exSearchModal('Ajouter un exercice',id=>pushEx(id)));}
 function pushEx(id){if(!wo)return;wo.exs.push({id,sets:[{kg:'',reps:'',done:false}],note:'',rest:DB.settings().rest||90,bw:false});closeM();rWoBody();toast(gEx(id).name+' ajouté !');}
+function remEx(ei){if(!wo)return;if(wo.exs.length<=1){toast('Minimum 1 exercice');return;}wo.exs.splice(ei,1);rWoBody();}
 function setExRest(ei){const cur=wo.exs[ei].rest||DB.settings().rest||90;openM(`<div class="mt">⏱ Repos — ${gEx(wo.exs[ei].id).name}</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px">${[45,60,90,120,150,180,240].map(s=>`<button class="btn ${cur===s?'bp':'bg'}" onclick="applyExRest(${ei},${s})">${s}s</button>`).join('')}</div><label class="lbl">Personnalisé (s)</label><input class="inp" type="number" id="rc" value="${cur}" style="margin-bottom:10px"><button class="btn bp bfull" onclick="applyExRest(${ei},parseInt(document.getElementById('rc').value)||90)">Appliquer</button>`);}
 function applyExRest(ei,s){wo.exs[ei].rest=s;const btn=document.getElementById('rest-btn-'+ei);if(btn)btn.textContent='⏱ '+s+'s';closeM();}
 function uWoF(){const a=document.getElementById('wse'),b=document.getElementById('wvo'),c=document.getElementById('wpr');if(a)a.textContent=tSets();if(b)b.textContent=tVol()+'kg';if(c)c.textContent=wo?.prs.length||0;}
@@ -709,8 +715,9 @@ function showSum(s){openM(`<div class="mt">🎉 Séance terminée !</div><div st
 // ══════════════════════════════════════════
 // REST TIMER
 // ══════════════════════════════════════════
-function startR(total){let rem=total;document.getElementById('ro').classList.add('open');const circ=478;const pr=document.getElementById('rpr');const upd=()=>{document.getElementById('rs').textContent=fT(rem);if(pr)pr.style.strokeDashoffset=circ*(1-rem/total);};upd();if(rI)clearInterval(rI);rI=setInterval(()=>{rem--;upd();if(rem<=0)skipR();},1000);}
-function skipR(){clearInterval(rI);document.getElementById('ro').classList.remove('open');}
+function startR(total){rTotal=total;rEndTime=Date.now()+total*1000;document.getElementById('ro').classList.add('open');const circ=478;const pr=document.getElementById('rpr');const upd=()=>{const rem=Math.max(0,Math.ceil((rEndTime-Date.now())/1000));document.getElementById('rs').textContent=fT(rem);if(pr)pr.style.strokeDashoffset=circ*(1-rem/rTotal);if(rem<=0)skipR();};upd();if(rI)clearInterval(rI);rI=setInterval(upd,500);}
+function skipR(){clearInterval(rI);rEndTime=0;document.getElementById('ro').classList.remove('open');if(document.hidden&&'Notification'in window&&Notification.permission==='granted')new Notification('FitPro ⏱',{body:'Repos terminé — c\'est reparti !',icon:'icon-192.png'});}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&rEndTime>0){const rem=Math.ceil((rEndTime-Date.now())/1000);if(rem<=0){skipR();toast('⏱ Repos terminé !');}}});
 
 // ══════════════════════════════════════════
 // EDIT PRESET
