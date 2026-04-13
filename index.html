@@ -164,6 +164,8 @@ const DB={
   saveHiddenExercises(v){this.s('hiddenex',v)},
   emojiOverrides(){return this.g('emojioverrides')||{}},
   saveEmojiOverrides(v){this.s('emojioverrides',v)},
+  muscleOverrides(){return this.g('muscleoverrides')||{}},
+  saveMuscleOverrides(v){this.s('muscleoverrides',v)},
   wip(){return this.g('wip')||null},
   saveWip(v){this.s('wip',v)},
   clearWip(){localStorage.removeItem('fp4_wip')},
@@ -236,8 +238,8 @@ const EX=[
   {id:'plank',name:'Planche',muscle:'Abdominaux',eq:'Poids du corps',e:'📏'},
   {id:'leg_raise',name:'Relevé de jambes',muscle:'Abdominaux',eq:'Poids du corps',e:'🦵'},
 ];
-const allEx=()=>{const hidden=DB.hiddenExercises();const ov=DB.emojiOverrides();return[...EX,...DB.customExercises()].filter(ex=>!hidden.includes(ex.id)).map(ex=>ov[ex.id]?{...ex,e:ov[ex.id]}:ex);};
-const gEx=id=>{const ov=DB.emojiOverrides();const found=[...EX,...DB.customExercises()].find(e=>e.id===id)||{id,name:id,muscle:'Autre',e:'💪',eq:'—'};return ov[found.id]?{...found,e:ov[found.id]}:found;};
+const allEx=()=>{const hidden=DB.hiddenExercises();const ov=DB.emojiOverrides();const mo=DB.muscleOverrides();return[...EX,...DB.customExercises()].filter(ex=>!hidden.includes(ex.id)).map(ex=>{let e=ov[ex.id]?{...ex,e:ov[ex.id]}:ex;return mo[e.id]?{...e,muscle:mo[e.id]}:e;});};
+const gEx=id=>{const ov=DB.emojiOverrides();const mo=DB.muscleOverrides();const found=[...EX,...DB.customExercises()].find(e=>e.id===id)||{id,name:id,muscle:'Autre',e:'💪',eq:'—'};let ex=ov[found.id]?{...found,e:ov[found.id]}:found;return mo[ex.id]?{...ex,muscle:mo[ex.id]}:ex;};
 
 // ══════════════════════════════════════════
 // PRESETS
@@ -1191,19 +1193,20 @@ ${tab==='create'?`<div style="margin-bottom:9px"><label class="lbl">Nom</label><
   </div>
 </div>
 <button class="btn bp bfull" onclick="saveCustomEx()">Créer →</button>`:`<input class="inp" id="ex-search" placeholder="🔍 Rechercher…" oninput="filterManageEx(this.value)" style="margin-bottom:8px">
-<div style="font-size:11px;color:var(--t3);margin-bottom:6px">Appuie sur l'emoji pour le changer · 🙈 masque · ✕ supprime</div>
+<div style="font-size:11px;color:var(--t3);margin-bottom:6px">Emoji = changer · 💪 = muscles · 🙈 masquer · ✕ supprimer</div>
 <div id="ex-manage-list" style="max-height:360px;overflow-y:auto">${manageExHTML('')}</div>`}
 `);
 }
 function manageExHTML(q){
-  const hidden=DB.hiddenExercises();const ov=DB.emojiOverrides();const customs=DB.customExercises();const customIds=new Set(customs.map(e=>e.id));
+  const hidden=DB.hiddenExercises();const ov=DB.emojiOverrides();const mo=DB.muscleOverrides();const customs=DB.customExercises();const customIds=new Set(customs.map(e=>e.id));
   const all=[...EX,...customs];
   const filtered=q?all.filter(e=>e.name.toLowerCase().includes(q.toLowerCase())):all;
   if(!filtered.length)return`<div style="text-align:center;color:var(--t3);padding:20px;font-size:13px">Aucun résultat</div>`;
-  return filtered.map(ex=>{const isH=hidden.includes(ex.id);const emoji=ov[ex.id]||ex.e;const isCust=customIds.has(ex.id);
+  return filtered.map(ex=>{const isH=hidden.includes(ex.id);const emoji=ov[ex.id]||ex.e;const muscle=mo[ex.id]||ex.muscle;const isCust=customIds.has(ex.id);
     return`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bg2);opacity:${isH?'0.4':'1'}">
       <span style="font-size:20px;cursor:pointer" onclick="changeExEmoji('${ex.id}')">${emoji}</span>
-      <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ex.name}</div><div style="font-size:10px;color:var(--t3)">${ex.muscle}</div></div>
+      <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ex.name}</div><div style="font-size:10px;color:var(--t3)">${muscle}${mo[ex.id]?'<span style="color:var(--a);margin-left:4px">✎</span>':''}</div></div>
+      <button onclick="openEditMuscle('${ex.id}')" style="border:none;background:transparent;font-size:15px;cursor:pointer;color:var(--t3)" title="Modifier muscles">💪</button>
       <button onclick="toggleHideEx('${ex.id}')" style="border:none;background:transparent;font-size:16px;cursor:pointer;color:var(--t3)">${isH?'👁️':'🙈'}</button>
       ${isCust?`<button onclick="delCustomExById('${ex.id}')" style="border:none;background:transparent;font-size:15px;cursor:pointer;color:var(--t3)">✕</button>`:''}
     </div>`;
@@ -1224,6 +1227,21 @@ function saveExEmoji(id){
   if(!val){toast('Entre un emoji');return;}
   const ov=DB.emojiOverrides();ov[id]=val;DB.saveEmojiOverrides(ov);
   openCreateEx('manage');toast('Emoji mis à jour !');
+}
+function openEditMuscle(id){
+  const ex=gEx(id);const cur=ex.muscle.split(' · ');
+  openM(`<div class="mt">💪 Muscles — ${ex.name}</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;border:1.5px solid var(--bd);border-radius:var(--rs);padding:8px;margin-bottom:12px">
+  ${MUSCLES_LIST.filter(m=>m!=='Autre').map(m=>`<label style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:4px 2px"><input type="checkbox" class="em-cb" value="${m}" ${cur.includes(m)?'checked':''} style="accent-color:var(--a);width:14px;height:14px"><span style="font-size:12px">${m}</span></label>`).join('')}
+</div>
+<button class="btn bp bfull" style="margin-bottom:6px" onclick="saveExMuscle('${id}')">Enregistrer</button>
+<button class="btn bg bfull" onclick="openCreateEx('manage')">Annuler</button>`);
+}
+function saveExMuscle(id){
+  const muscles=[...document.querySelectorAll('.em-cb:checked')].map(cb=>cb.value);
+  if(!muscles.length){toast('Sélectionne au moins un muscle');return;}
+  const mo=DB.muscleOverrides();mo[id]=muscles.join(' · ');DB.saveMuscleOverrides(mo);
+  openCreateEx('manage');toast('Muscles mis à jour !');render();
 }
 function toggleHideEx(id){
   const hidden=DB.hiddenExercises();const idx=hidden.indexOf(id);
@@ -1252,7 +1270,7 @@ function saveCustomEx(){
 function delCustomEx(i){
   const customs=DB.customExercises();customs.splice(i,1);DB.saveCustomExercises(customs);openCreateEx();}
 function confReset(){openM(`<div class="mt">⚠️ Réinitialiser ?</div><p style="color:var(--t2);margin-bottom:14px;font-size:12px">Toutes tes données seront supprimées.</p><button class="btn bd_ bfull" style="margin-bottom:5px" onclick="doReset()">Oui, tout supprimer</button><button class="btn bg bfull" onclick="closeM()">Annuler</button>`);}
-function doReset(){['sessions','goals','presets','settings','imp','body','profile','customex','hiddenex','emojioverrides','wip'].forEach(k=>localStorage.removeItem('fp4_'+k));closeM();toast('Réinitialisé');render();}
+function doReset(){['sessions','goals','presets','settings','imp','body','profile','customex','hiddenex','emojioverrides','muscleoverrides','wip'].forEach(k=>localStorage.removeItem('fp4_'+k));closeM();toast('Réinitialisé');render();}
 
 // ══════════════════════════════════════════
 // MODAL
