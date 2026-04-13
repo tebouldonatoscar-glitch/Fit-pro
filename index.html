@@ -273,6 +273,7 @@ function isNativeBW(id){const e=gEx(id);return e.eq==='Poids du corps'&&!id.incl
 function muscleClr(muscle){const m=(muscle||'').split(' · ')[0].trim();const map={'Dos':'#E8F1F8','Pectoraux':'#FDECEA','Épaules':'#F0EBF8','Biceps':'#FEF0E6','Triceps':'#FFF0E0','Quadriceps':'#EBF9F3','Ischio-jambiers':'#E8F7F3','Fessiers':'#EBF9F3','Mollets':'#E8F7F3','Abdominaux':'#FDF8E1','Cardio':'#FDECEA'};return map[m]||'var(--ax)';}
 function best1RM(id){return DB.sessions().flatMap(s=>s.exs.filter(e=>e.id===id).flatMap(e=>e.sets.filter(s=>s.done).map(s=>c1RM(parseFloat(s.kg)||0,parseInt(s.reps)||0)))).reduce((m,v)=>Math.max(m,v),0)||0;}
 function mDays(){const r={},n=Date.now();DB.sessions().forEach(s=>{s.exs.forEach(ex=>{gEx(ex.id).muscle.split(' · ').forEach(m=>{const d=Math.floor((n-s.date)/86400000);if(!(m in r)||r[m]>d)r[m]=d;});});});return r;}
+function mSets7(){const r={},since=Date.now()-7*86400000;DB.sessions().filter(s=>s.date>=since).forEach(s=>{s.exs.forEach(ex=>{gEx(ex.id).muscle.split(' · ').forEach(m=>{r[m]=(r[m]||0)+ex.sets.filter(st=>st.done).length;});});});return r;}
 function rc(d){return d===undefined||d>4?'green':d>=2?'orange':'red';}
 function wkSess(){return DB.sessions().filter(s=>Date.now()-s.date<7*86400000);}
 function streak(){const ss=DB.sessions();if(!ss.length)return 0;const days=[...new Set(ss.map(s=>Math.floor(s.date/86400000)))].sort((a,b)=>b-a);const t=Math.floor(Date.now()/86400000);let st=0,c=t;for(const d of days){if(d===c||d===c-1){st++;c=d;}else break;}return st;}
@@ -370,8 +371,8 @@ function render(){const sc=document.getElementById('sc');sc.innerHTML='';sc.scro
 // ══════════════════════════════════════════
 // CALENDAR
 // ══════════════════════════════════════════
-function buildMuscleMap(md){
-  function mc(m){const d=md[m];if(d===undefined||d>4)return{f:'#D4F5E4',s:'#18A558'};if(d>=2)return{f:'#FEF0E6',s:'#E07B39'};return{f:'#FDECEA',s:'#C0392B'};}
+function buildMuscleMap(ms){
+  function mc(m){const n=ms[m]||0;if(n===0)return{f:'#D4F5E4',s:'#18A558'};if(n<6)return{f:'#A8F0C8',s:'#22C46E'};if(n<8)return{f:'#5DBF8C',s:'#1A7A45'};if(n<10)return{f:'#FFF3C4',s:'#D4A800'};if(n<12)return{f:'#FEE0C0',s:'#E07B39'};return{f:'#FDECEA',s:'#C0392B'};}
   function r(c,x,y,w,h,rx=4){return`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${c.f}" stroke="${c.s}" stroke-width="1.2" opacity=".9"/>`;}
   function el(c,cx,cy,rx,ry){return`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${c.f}" stroke="${c.s}" stroke-width="1.2" opacity=".9"/>`;}
   const nb='#E4E1DA',ns='#D4D0C8';
@@ -595,8 +596,8 @@ function wuFinish(){
 // HOME
 // ══════════════════════════════════════════
 function rHome(sc){
-  const ss=DB.sessions(),ws=wkSess(),md=mDays(),nx=nxt(),ps=gP();
-  const st=streak(),neg=Object.entries(md).filter(([,d])=>d>7).map(([m])=>m);
+  const ss=DB.sessions(),ws=wkSess(),md=mDays(),ms=mSets7(),nx=nxt(),ps=gP();
+  const st=streak(),neg=Object.keys(md).filter(m=>!ms[m]);
   const lw=latestWeight();const bd=DB.body();const prof=DB.profile();
   const bmi=calcBMI(lw,bd.height);
   sc.innerHTML=`<div style="padding:18px 15px 6px" class="fade">
@@ -632,12 +633,16 @@ function rHome(sc){
         </div>
       </div></div>`:''}
 
-    <div style="margin-bottom:16px"><div class="slbl">Récupération musculaire</div>
+    <div style="margin-bottom:16px"><div class="slbl">Charge musculaire — 7 jours</div>
       <div class="card">
-        ${buildMuscleMap(md)}
+        ${buildMuscleMap(ms)}
         <div style="height:1px;background:var(--bd);margin:8px 0"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-          ${['Pectoraux','Dos','Épaules','Biceps','Triceps','Quadriceps','Ischio-jambiers','Fessiers','Mollets','Abdominaux'].map(m=>{const d=md[m];const c=rc(d);return`<div style="display:flex;align-items:center;gap:5px"><span class="rd rd${c}"></span><span style="font-size:11px;font-weight:500">${m}</span><span style="font-size:10px;color:var(--t3);margin-left:auto">${d===undefined?'Jamais':'J-'+d}</span></div>`;}).join('')}
+          ${['Pectoraux','Dos','Épaules','Biceps','Triceps','Quadriceps','Ischio-jambiers','Fessiers','Mollets','Abdominaux'].map(m=>{const n=ms[m]||0;const dc=n===0?'#A8D5B9':n<6?'#22C46E':n<8?'#1A7A45':n<10?'#D4A800':n<12?'#E07B39':'#C0392B';return`<div style="display:flex;align-items:center;gap:5px"><span class="rd" style="background:${dc}"></span><span style="font-size:11px;font-weight:500">${m}</span><span style="font-size:10px;color:var(--t3);margin-left:auto">${n?n+' série'+(n>1?'s':''):'—'}</span></div>`;}).join('')}
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;padding-top:8px;border-top:1px solid var(--bd)">
+          <span style="font-size:9px;font-weight:700;color:var(--t3);letter-spacing:1px;width:100%;text-transform:uppercase;margin-bottom:1px">Séries / 7j</span>
+          ${[['#A8D5B9','0'],['#22C46E','1–5'],['#1A7A45','6–7'],['#D4A800','8–9'],['#E07B39','10–11'],['#C0392B','12+']].map(([c,l])=>`<div style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:${c};display:inline-block"></span><span style="font-size:9px;color:var(--t2);font-weight:600">${l}</span></div>`).join('')}
         </div>
       </div>
     </div>
@@ -727,7 +732,6 @@ function rWoBody(){const body=document.getElementById('wob');if(!body||!wo)retur
     const isFirst=!!ex.paired;
     const isSecond=ei>0&&!!wo.exs[ei-1].paired;
     const inBiset=isFirst||isSecond;
-    const canPair=!inBiset&&ei<wo.exs.length-1&&!wo.exs[ei+1].paired;
     const connector=isSecond?`<div style="display:flex;align-items:center;gap:6px;margin:-10px 0 8px 2px"><div style="width:3px;height:20px;background:var(--pu);border-radius:2px"></div><span class="chip" style="background:var(--pul);color:var(--pu);font-size:9px">🔗 BISET</span></div>`:'';
     return`${connector}<div style="margin-bottom:20px;${inBiset?'border-left:3px solid var(--pu);padding-left:10px;':''}" id="eb-${ei}">
       <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px;flex-wrap:wrap">
@@ -746,7 +750,7 @@ function rWoBody(){const body=document.getElementById('wob');if(!body||!wo)retur
         <button class="btn bg bxs" onclick="addSet(${ei})">+ Série</button>
         <button class="btn bg bxs" onclick="repEx(${ei})">🔄 Changer</button>
         <button class="btn bg bxs" id="rest-btn-${ei}" onclick="setExRest(${ei})">⏱ ${ex.rest||DB.settings().rest||90}s</button>
-        ${canPair?`<button class="btn bxs" style="background:var(--pul);color:var(--pu);border:1px solid rgba(107,79,160,.2)" onclick="togBiset(${ei})">🔗 Biset</button>`:''}
+        ${!inBiset?`<button class="btn bxs" style="background:var(--pul);color:var(--pu);border:1px solid rgba(107,79,160,.2)" onclick="addBiset(${ei})">🔗 Biset</button>`:''}
         ${isFirst?`<button class="btn bxs" style="background:var(--pul);color:var(--pu);border:1px solid rgba(107,79,160,.2)" onclick="togBiset(${ei})">🔓 Déslier</button>`:''}
         <button class="btn bd_ bxs" onclick="remEx(${ei})">✕ Retirer</button>
       </div>
@@ -756,7 +760,8 @@ function rWoBody(){const body=document.getElementById('wob');if(!body||!wo)retur
   }).join('');}
 function sRow(ei,si,set,bw){const kgField=bw?`<div class="si" style="display:flex;align-items:center;justify-content:center;background:var(--al);color:var(--a);font-size:11px;font-weight:700;border:1.5px solid var(--a2);border-radius:var(--rx)">BW</div>`:`<input class="si" type="number" placeholder="kg" value="${set.kg||''}" inputmode="decimal" oninput="wo.exs[${ei}].sets[${si}].kg=this.value">`;return`<div class="sr" id="sr-${ei}-${si}"><div class="sn">${si+1}</div>${kgField}<input class="si" type="number" placeholder="reps" value="${set.reps||''}" inputmode="numeric" oninput="wo.exs[${ei}].sets[${si}].reps=this.value"><button class="sc ${set.done?'done':''}" onclick="togSet(${ei},${si})">✓</button></div>`;}
 function togBW(ei){if(!wo)return;wo.exs[ei].bw=!wo.exs[ei].bw;const bw=wo.exs[ei].bw;const c=document.getElementById('sets-'+ei);if(c)c.innerHTML=wo.exs[ei].sets.map((s,si)=>sRow(ei,si,s,bw)).join('');const chip=document.getElementById('bw-chip-'+ei);if(chip){chip.className='chip '+(bw?'cg':'cgr');chip.textContent=bw?'🏃 BW':'BW';}const kghdr=document.getElementById('kg-hdr-'+ei);if(kghdr)kghdr.textContent=bw?'BW':'KG';}
-function togBiset(ei){if(!wo||ei>=wo.exs.length-1)return;wo.exs[ei].paired=!wo.exs[ei].paired;rWoBody();}
+function togBiset(ei){if(!wo||ei>=wo.exs.length-1)return;wo.exs[ei].paired=false;rWoBody();}
+function addBiset(ei){if(!wo)return;openM(exSearchModal('2e exercice du biset',id=>{if(!wo)return;const defRest=DB.settings().rest||90;wo.exs.splice(ei+1,0,{id,sets:[{kg:'',reps:'',done:false}],note:'',rest:defRest,bw:isNativeBW(id)});wo.exs[ei].paired=true;closeM();rWoBody();toast('Biset : '+gEx(id).name+' !');}));}
 function togSet(ei,si){if(!wo)return;const set=wo.exs[ei].sets[si];set.done=!set.done;const btn=document.querySelector(`#sr-${ei}-${si} .sc`);if(btn)btn.className='sc'+(set.done?' done':'');if(set.done){if(navigator.vibrate)navigator.vibrate(12);const id=wo.exs[ei].id;const bw=wo.exs[ei].bw;const bwKg=parseFloat(DB.profile().weight)||0;const kg=bw?bwKg:parseFloat(set.kg)||0;const reps=parseInt(set.reps)||0;if(reps>0&&(kg>0)){const rm=c1RM(kg,reps);const prev=best1RM(id);if(rm>prev){wo.prs.push({id,kg,reps,rm});toast('🏆 PR '+gEx(id).name+' '+(bw?'BW':kg+'kg')+'×'+reps+'!');}}if(wo.exs[ei].paired&&ei+1<wo.exs.length){toast('→ '+gEx(wo.exs[ei+1].id).name+' !');}else{startR(wo.exs[ei].rest||DB.settings().rest||90);}}uWoF();DB.saveWip(wo);}
 function addSet(ei){if(!wo)return;const ex=wo.exs[ei];const last=ex.sets[ex.sets.length-1];ex.sets.push({kg:last?.kg||'',reps:last?.reps||'',done:false});const c=document.getElementById('sets-'+ei);if(c){const si=ex.sets.length-1;const d=document.createElement('div');d.innerHTML=sRow(ei,si,ex.sets[si],ex.bw);c.appendChild(d.firstChild);}}
 let _exCB=null;
