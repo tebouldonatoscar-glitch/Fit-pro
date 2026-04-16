@@ -377,31 +377,11 @@ function buildMuscleMap(ms){
   function mc(m){const n=ms[m]||0;if(n===0)return{f:'#D4F5E4',s:'#18A558'};if(n<6)return{f:'#A8F0C8',s:'#22C46E'};if(n<8)return{f:'#5DBF8C',s:'#1A7A45'};if(n<10)return{f:'#FFF3C4',s:'#D4A800'};if(n<12)return{f:'#FEE0C0',s:'#E07B39'};return{f:'#FDECEA',s:'#C0392B'};}
   function r(c,x,y,w,h,rx=4){return`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${c.f}" stroke="${c.s}" stroke-width="1.2" opacity=".9"/>`;}
   function el(c,cx,cy,rx,ry){return`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${c.f}" stroke="${c.s}" stroke-width="1.2" opacity=".9"/>`;}
+  function pt(c,d){return`<path d="${d}" fill="${c.f}" stroke="${c.s}" stroke-width="1.2" opacity=".9"/>`;}
   const nb='#E4E1DA',ns='#D4D0C8';
-  const front=`<svg viewBox="0 0 60 128" width="88" height="128" style="display:block">
-    <ellipse cx="30" cy="8" rx="7" ry="7.5" fill="${nb}" stroke="${ns}" stroke-width="1"/>
-    <rect x="26" y="15" width="8" height="6" rx="2" fill="${nb}"/>
-    ${el(mc('Épaules'),11,26,7,5)}${el(mc('Épaules'),49,26,7,5)}
-    ${el(mc('Pectoraux'),30,35,15,9)}
-    ${r(mc('Biceps'),4,30,9,18)}${r(mc('Biceps'),47,30,9,18)}
-    <rect x="5" y="49" width="7" height="13" rx="3" fill="${nb}" stroke="${ns}" stroke-width=".8" opacity=".5"/>
-    <rect x="48" y="49" width="7" height="13" rx="3" fill="${nb}" stroke="${ns}" stroke-width=".8" opacity=".5"/>
-    ${r(mc('Abdominaux'),22,47,16,20)}
-    ${r(mc('Quadriceps'),16,70,12,26,5)}${r(mc('Quadriceps'),32,70,12,26,5)}
-    ${r(mc('Mollets'),17,98,10,22,4)}${r(mc('Mollets'),33,98,10,22,4)}
-  </svg>`;
-  const back=`<svg viewBox="0 0 60 128" width="88" height="128" style="display:block">
-    <ellipse cx="30" cy="8" rx="7" ry="7.5" fill="${nb}" stroke="${ns}" stroke-width="1"/>
-    <rect x="26" y="15" width="8" height="6" rx="2" fill="${nb}"/>
-    ${el(mc('Épaules'),11,26,7,5)}${el(mc('Épaules'),49,26,7,5)}
-    ${r(mc('Dos'),14,28,32,28,5)}
-    ${r(mc('Triceps'),4,30,9,18)}${r(mc('Triceps'),47,30,9,18)}
-    <rect x="5" y="49" width="7" height="13" rx="3" fill="${nb}" stroke="${ns}" stroke-width=".8" opacity=".5"/>
-    <rect x="48" y="49" width="7" height="13" rx="3" fill="${nb}" stroke="${ns}" stroke-width=".8" opacity=".5"/>
-    ${el(mc('Fessiers'),30,66,16,11)}
-    ${r(mc('Ischio-jambiers'),16,76,12,23,5)}${r(mc('Ischio-jambiers'),32,76,12,23,5)}
-    ${r(mc('Mollets'),17,101,10,20,4)}${r(mc('Mollets'),33,101,10,20,4)}
-  </svg>`;
+  const sil=`<ellipse cx="30" cy="8" rx="7" ry="8" fill="${nb}" stroke="${ns}" stroke-width="0.7"/><path d="M26,16 C24,18 23,20 23,22 L19,24 L14,26 C10,28 8,33 8,37 L8,52 C8,55 10,58 12,59 L13,62 L14,72 L14,95 L16,128 L22,128 L23,95 L24,82 L30,82 L36,82 L37,95 L38,128 L44,128 L46,95 L46,72 L47,62 L48,59 C50,58 52,55 52,52 L52,37 C52,33 50,28 46,26 L41,24 L37,22 C37,20 36,18 34,16 Z" fill="${nb}" stroke="${ns}" stroke-width="0.7" opacity="0.5"/>`;
+  const front=`<svg viewBox="0 0 60 130" width="88" height="128" style="display:block">${sil}${el(mc('Épaules'),10,32,8,6)}${el(mc('Épaules'),50,32,8,6)}${pt(mc('Pectoraux'),"M29,19 C18,22 16,40 21,47 L29,45 Z")}${pt(mc('Pectoraux'),"M31,19 C42,22 44,40 39,47 L31,45 Z")}${r(mc('Biceps'),3,28,11,24,6)}${r(mc('Biceps'),46,28,11,24,6)}${r(mc('Abdominaux'),22,47,16,24,3)}${r(mc('Quadriceps'),14,74,13,34,6)}${r(mc('Quadriceps'),33,74,13,34,6)}${r(mc('Mollets'),15,110,11,20,4)}${r(mc('Mollets'),34,110,11,20,4)}</svg>`;
+  const back=`<svg viewBox="0 0 60 130" width="88" height="128" style="display:block">${sil}${el(mc('Épaules'),10,32,8,6)}${el(mc('Épaules'),50,32,8,6)}${pt(mc('Dos'),"M19,20 L41,20 L46,62 L38,67 L30,65 L22,67 L14,62 Z")}${r(mc('Triceps'),3,28,11,24,6)}${r(mc('Triceps'),46,28,11,24,6)}${el(mc('Fessiers'),30,78,16,11)}${r(mc('Ischio-jambiers'),14,88,13,30,6)}${r(mc('Ischio-jambiers'),33,88,13,30,6)}${r(mc('Mollets'),15,120,11,18,4)}${r(mc('Mollets'),34,120,11,18,4)}</svg>`;
   return`<div style="display:flex;justify-content:center;gap:16px;padding:6px 0 4px"><div style="text-align:center"><div style="font-size:8px;font-weight:700;color:var(--t3);letter-spacing:1px;margin-bottom:4px">FACE</div>${front}</div><div style="text-align:center"><div style="font-size:8px;font-weight:700;color:var(--t3);letter-spacing:1px;margin-bottom:4px">DOS</div>${back}</div></div>`;
 }
 function buildCalendar(ss, ps){
