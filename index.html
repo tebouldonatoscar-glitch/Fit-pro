@@ -374,88 +374,34 @@ function render(){const sc=document.getElementById('sc');sc.innerHTML='';sc.scro
 // CALENDAR
 // ══════════════════════════════════════════
 function buildMuscleMap(ms){
-  function mc(m){const n=ms[m]||0;if(n===0)return'#D0EBD5';if(n<6)return'#74C48A';if(n<8)return'#2E9E58';if(n<10)return'#F5D76E';if(n<12)return'#F0A04B';return'#E05C4B';}
-  const sk='#c8b89a', skS='#b0a080';
-  // FRONT SVG — paths approximate real muscle shapes on a 100×220 viewBox
-  const front=`<svg viewBox="0 0 100 220" width="90" height="198" style="display:block">
-    <!-- Silhouette body base -->
-    <path d="M35,30 Q30,18 35,12 Q50,5 65,12 Q70,18 65,30 Q62,36 50,37 Q38,36 35,30Z" fill="${sk}" stroke="${skS}" stroke-width="1"/>
-    <!-- Neck -->
-    <path d="M44,36 Q50,40 56,36 L57,46 Q50,50 43,46Z" fill="${sk}" stroke="${skS}" stroke-width="0.8"/>
-    <!-- Body torso base -->
-    <path d="M28,48 Q18,50 16,65 L14,110 Q16,118 25,120 L28,145 Q30,155 35,158 L38,158 L38,120 Q45,122 50,122 Q55,122 62,120 L62,158 L65,158 Q70,155 72,145 L75,120 Q84,118 86,110 L84,65 Q82,50 72,48 Q62,44 50,44 Q38,44 28,48Z" fill="${sk}" stroke="${skS}" stroke-width="1"/>
-    <!-- Left arm base -->
-    <path d="M16,65 Q10,68 9,80 L8,100 Q8,108 12,112 L16,114 L18,90 L18,65Z" fill="${sk}" stroke="${skS}" stroke-width="0.8"/>
-    <!-- Right arm base -->
-    <path d="M84,65 Q90,68 91,80 L92,100 Q92,108 88,112 L84,114 L82,90 L82,65Z" fill="${sk}" stroke="${skS}" stroke-width="0.8"/>
-    <!-- Forearms -->
-    <path d="M8,100 Q7,115 9,128 L12,140 L16,138 L13,114Z" fill="${sk}" stroke="${skS}" stroke-width="0.8"/>
-    <path d="M92,100 Q93,115 91,128 L88,140 L84,138 L87,114Z" fill="${sk}" stroke="${skS}" stroke-width="0.8"/>
-    <!-- Legs base -->
-    <path d="M28,155 Q22,158 21,175 L20,200 Q20,210 25,214 L32,215 Q37,215 38,210 L40,185 L40,158Z" fill="${sk}" stroke="${skS}" stroke-width="0.8"/>
-    <path d="M72,155 Q78,158 79,175 L80,200 Q80,210 75,214 L68,215 Q63,215 62,210 L60,185 L60,158Z" fill="${sk}" stroke="${skS}" stroke-width="0.8"/>
-    <!-- Calves front -->
-    <path d="M21,200 Q20,208 22,215 L28,217 L32,215 L30,200Z" fill="${sk}" stroke="${skS}" stroke-width="0.8"/>
-    <path d="M79,200 Q80,208 78,215 L72,217 L68,215 L70,200Z" fill="${sk}" stroke="${skS}" stroke-width="0.8"/>
-
-    <!-- PECTORAUX -->
-    <path d="M30,52 Q28,60 30,70 Q38,75 50,74 Q62,75 70,70 Q72,60 70,52 Q62,48 50,48 Q38,48 30,52Z" fill="${mc('Pectoraux')}" stroke="${mc('Pectoraux')}" stroke-width="0.5" opacity="0.92"/>
-    <!-- Left EPAULE -->
-    <path d="M18,50 Q12,54 12,64 Q14,72 19,74 Q24,72 27,66 Q30,58 28,50 Q24,47 18,50Z" fill="${mc('Épaules')}" stroke="${mc('Épaules')}" stroke-width="0.5" opacity="0.92"/>
-    <!-- Right EPAULE -->
-    <path d="M82,50 Q88,54 88,64 Q86,72 81,74 Q76,72 73,66 Q70,58 72,50 Q76,47 82,50Z" fill="${mc('Épaules')}" stroke="${mc('Épaules')}" stroke-width="0.5" opacity="0.92"/>
-    <!-- Left BICEPS -->
-    <path d="M12,72 Q9,78 9,90 Q10,100 14,104 Q18,106 20,100 Q22,90 20,76 Q17,70 12,72Z" fill="${mc('Biceps')}" stroke="${mc('Biceps')}" stroke-width="0.5" opacity="0.92"/>
-    <!-- Right BICEPS -->
-    <path d="M88,72 Q91,78 91,90 Q90,100 86,104 Q82,106 80,100 Q78,90 80,76 Q83,70 88,72Z" fill="${mc('Biceps')}" stroke="${mc('Biceps')}" stroke-width="0.5" opacity="0.92"/>
-    <!-- ABDOMINAUX -->
-    <path d="M34,76 Q32,88 33,100 Q35,112 40,116 Q45,118 50,118 Q55,118 60,116 Q65,112 67,100 Q68,88 66,76 Q58,80 50,80 Q42,80 34,76Z" fill="${mc('Abdominaux')}" stroke="${mc('Abdominaux')}" stroke-width="0.5" opacity="0.88"/>
-    <!-- Left QUADRICEPS -->
-    <path d="M29,158 Q24,165 23,180 Q23,195 27,202 Q31,205 35,203 Q39,198 40,183 L40,158Z" fill="${mc('Quadriceps')}" stroke="${mc('Quadriceps')}" stroke-width="0.5" opacity="0.92"/>
-    <!-- Right QUADRICEPS -->
-    <path d="M71,158 Q76,165 77,180 Q77,195 73,202 Q69,205 65,203 Q61,198 60,183 L60,158Z" fill="${mc('Quadriceps')}" stroke="${mc('Quadriceps')}" stroke-width="0.5" opacity="0.92"/>
-    <!-- Left MOLLETS -->
-    <path d="M23,202 Q21,210 23,216 Q27,218 31,216 Q34,212 33,203Z" fill="${mc('Mollets')}" stroke="${mc('Mollets')}" stroke-width="0.5" opacity="0.92"/>
-    <!-- Right MOLLETS -->
-    <path d="M77,202 Q79,210 77,216 Q73,218 69,216 Q66,212 67,203Z" fill="${mc('Mollets')}" stroke="${mc('Mollets')}" stroke-width="0.5" opacity="0.92"/>
+  function mc(m){const n=ms[m]||0;if(n===0)return{f:'#D4F5E4',s:'#18A558'};if(n<6)return{f:'#A8F0C8',s:'#22C46E'};if(n<8)return{f:'#5DBF8C',s:'#1A7A45'};if(n<10)return{f:'#FFF3C4',s:'#D4A800'};if(n<12)return{f:'#FEE0C0',s:'#E07B39'};return{f:'#FDECEA',s:'#C0392B'};}
+  function r(c,x,y,w,h,rx=4){return`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${c.f}" stroke="${c.s}" stroke-width="1.2" opacity=".9"/>`;}
+  function el(c,cx,cy,rx,ry){return`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${c.f}" stroke="${c.s}" stroke-width="1.2" opacity=".9"/>`;}
+  const nb='#E4E1DA',ns='#D4D0C8';
+  const front=`<svg viewBox="0 0 60 128" width="88" height="128" style="display:block">
+    <ellipse cx="30" cy="8" rx="7" ry="7.5" fill="${nb}" stroke="${ns}" stroke-width="1"/>
+    <rect x="26" y="15" width="8" height="6" rx="2" fill="${nb}"/>
+    ${el(mc('Épaules'),11,26,7,5)}${el(mc('Épaules'),49,26,7,5)}
+    ${el(mc('Pectoraux'),30,35,15,9)}
+    ${r(mc('Biceps'),4,30,9,18)}${r(mc('Biceps'),47,30,9,18)}
+    <rect x="5" y="49" width="7" height="13" rx="3" fill="${nb}" stroke="${ns}" stroke-width=".8" opacity=".5"/>
+    <rect x="48" y="49" width="7" height="13" rx="3" fill="${nb}" stroke="${ns}" stroke-width=".8" opacity=".5"/>
+    ${r(mc('Abdominaux'),22,47,16,20)}
+    ${r(mc('Quadriceps'),16,70,12,26,5)}${r(mc('Quadriceps'),32,70,12,26,5)}
+    ${r(mc('Mollets'),17,98,10,22,4)}${r(mc('Mollets'),33,98,10,22,4)}
   </svg>`;
-
-  const back=`<svg viewBox="0 0 100 220" width="90" height="198" style="display:block">
-    <!-- Silhouette body base -->
-    <path d="M35,30 Q30,18 35,12 Q50,5 65,12 Q70,18 65,30 Q62,36 50,37 Q38,36 35,30Z" fill="${sk}" stroke="${skS}" stroke-width="1"/>
-    <path d="M44,36 Q50,40 56,36 L57,46 Q50,50 43,46Z" fill="${sk}" stroke="${skS}" stroke-width="0.8"/>
-    <path d="M28,48 Q18,50 16,65 L14,110 Q16,118 25,120 L28,145 Q30,155 35,158 L38,158 L38,120 Q45,122 50,122 Q55,122 62,120 L62,158 L65,158 Q70,155 72,145 L75,120 Q84,118 86,110 L84,65 Q82,50 72,48 Q62,44 50,44 Q38,44 28,48Z" fill="${sk}" stroke="${skS}" stroke-width="1"/>
-    <path d="M16,65 Q10,68 9,80 L8,100 Q8,108 12,112 L16,114 L18,90 L18,65Z" fill="${sk}" stroke="${skS}" stroke-width="0.8"/>
-    <path d="M84,65 Q90,68 91,80 L92,100 Q92,108 88,112 L84,114 L82,90 L82,65Z" fill="${sk}" stroke="${skS}" stroke-width="0.8"/>
-    <path d="M8,100 Q7,115 9,128 L12,140 L16,138 L13,114Z" fill="${sk}" stroke="${skS}" stroke-width="0.8"/>
-    <path d="M92,100 Q93,115 91,128 L88,140 L84,138 L87,114Z" fill="${sk}" stroke="${skS}" stroke-width="0.8"/>
-    <path d="M28,155 Q22,158 21,175 L20,200 Q20,210 25,214 L32,215 Q37,215 38,210 L40,185 L40,158Z" fill="${sk}" stroke="${skS}" stroke-width="0.8"/>
-    <path d="M72,155 Q78,158 79,175 L80,200 Q80,210 75,214 L68,215 Q63,215 62,210 L60,185 L60,158Z" fill="${sk}" stroke="${skS}" stroke-width="0.8"/>
-    <path d="M21,200 Q20,208 22,215 L28,217 L32,215 L30,200Z" fill="${sk}" stroke="${skS}" stroke-width="0.8"/>
-    <path d="M79,200 Q80,208 78,215 L72,217 L68,215 L70,200Z" fill="${sk}" stroke="${skS}" stroke-width="0.8"/>
-
-    <!-- DOS (trapèze + grand dorsal) -->
-    <path d="M29,50 Q22,58 20,75 Q20,95 26,108 Q32,114 38,116 Q45,118 50,118 Q55,118 62,116 Q68,114 74,108 Q80,95 80,75 Q78,58 71,50 Q62,46 50,46 Q38,46 29,50Z" fill="${mc('Dos')}" stroke="${mc('Dos')}" stroke-width="0.5" opacity="0.9"/>
-    <!-- Left EPAULE -->
-    <path d="M18,50 Q12,54 12,64 Q14,72 19,74 Q24,72 27,66 Q30,58 28,50 Q24,47 18,50Z" fill="${mc('Épaules')}" stroke="${mc('Épaules')}" stroke-width="0.5" opacity="0.92"/>
-    <!-- Right EPAULE -->
-    <path d="M82,50 Q88,54 88,64 Q86,72 81,74 Q76,72 73,66 Q70,58 72,50 Q76,47 82,50Z" fill="${mc('Épaules')}" stroke="${mc('Épaules')}" stroke-width="0.5" opacity="0.92"/>
-    <!-- Left TRICEPS -->
-    <path d="M12,72 Q9,78 9,92 Q10,102 14,106 Q17,108 19,102 Q20,92 19,76 Q16,70 12,72Z" fill="${mc('Triceps')}" stroke="${mc('Triceps')}" stroke-width="0.5" opacity="0.92"/>
-    <!-- Right TRICEPS -->
-    <path d="M88,72 Q91,78 91,92 Q90,102 86,106 Q83,108 81,102 Q80,92 81,76 Q84,70 88,72Z" fill="${mc('Triceps')}" stroke="${mc('Triceps')}" stroke-width="0.5" opacity="0.92"/>
-    <!-- FESSIERS -->
-    <path d="M29,120 Q24,128 24,140 Q25,150 32,154 Q38,156 44,154 Q50,152 50,152 Q50,152 56,154 Q62,156 68,154 Q75,150 76,140 Q76,128 71,120 Q62,116 50,116 Q38,116 29,120Z" fill="${mc('Fessiers')}" stroke="${mc('Fessiers')}" stroke-width="0.5" opacity="0.92"/>
-    <!-- Left ISCHIO -->
-    <path d="M29,158 Q24,166 23,180 Q23,196 27,202 Q31,205 35,203 Q39,198 40,183 L40,158Z" fill="${mc('Ischio-jambiers')}" stroke="${mc('Ischio-jambiers')}" stroke-width="0.5" opacity="0.92"/>
-    <!-- Right ISCHIO -->
-    <path d="M71,158 Q76,166 77,180 Q77,196 73,202 Q69,205 65,203 Q61,198 60,183 L60,158Z" fill="${mc('Ischio-jambiers')}" stroke="${mc('Ischio-jambiers')}" stroke-width="0.5" opacity="0.92"/>
-    <!-- Left MOLLETS -->
-    <path d="M23,202 Q21,210 23,216 Q27,218 31,216 Q34,212 33,203Z" fill="${mc('Mollets')}" stroke="${mc('Mollets')}" stroke-width="0.5" opacity="0.92"/>
-    <!-- Right MOLLETS -->
-    <path d="M77,202 Q79,210 77,216 Q73,218 69,216 Q66,212 67,203Z" fill="${mc('Mollets')}" stroke="${mc('Mollets')}" stroke-width="0.5" opacity="0.92"/>
+  const back=`<svg viewBox="0 0 60 128" width="88" height="128" style="display:block">
+    <ellipse cx="30" cy="8" rx="7" ry="7.5" fill="${nb}" stroke="${ns}" stroke-width="1"/>
+    <rect x="26" y="15" width="8" height="6" rx="2" fill="${nb}"/>
+    ${el(mc('Épaules'),11,26,7,5)}${el(mc('Épaules'),49,26,7,5)}
+    ${r(mc('Dos'),14,28,32,28,5)}
+    ${r(mc('Triceps'),4,30,9,18)}${r(mc('Triceps'),47,30,9,18)}
+    <rect x="5" y="49" width="7" height="13" rx="3" fill="${nb}" stroke="${ns}" stroke-width=".8" opacity=".5"/>
+    <rect x="48" y="49" width="7" height="13" rx="3" fill="${nb}" stroke="${ns}" stroke-width=".8" opacity=".5"/>
+    ${el(mc('Fessiers'),30,66,16,11)}
+    ${r(mc('Ischio-jambiers'),16,76,12,23,5)}${r(mc('Ischio-jambiers'),32,76,12,23,5)}
+    ${r(mc('Mollets'),17,101,10,20,4)}${r(mc('Mollets'),33,101,10,20,4)}
   </svg>`;
-
   return`<div style="display:flex;justify-content:center;gap:16px;padding:6px 0 4px"><div style="text-align:center"><div style="font-size:8px;font-weight:700;color:var(--t3);letter-spacing:1px;margin-bottom:4px">FACE</div>${front}</div><div style="text-align:center"><div style="font-size:8px;font-weight:700;color:var(--t3);letter-spacing:1px;margin-bottom:4px">DOS</div>${back}</div></div>`;
 }
 function buildCalendar(ss, ps){
