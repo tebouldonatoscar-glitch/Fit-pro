@@ -294,11 +294,22 @@ function finS(s){let v=0,st=0;s.exs.forEach(ex=>ex.sets.forEach(set=>{if(set.don
 
 function openImport(){
   openM(`<div class="mt">📥 Importer des séances</div>
-    <p style="font-size:12px;color:var(--t2);margin-bottom:10px">Format : <code style="background:var(--bg2);padding:2px 5px;border-radius:4px;font-size:11px">Séance 1 upper: 01/10/2025</code> puis <code style="background:var(--bg2);padding:2px 5px;border-radius:4px;font-size:11px">∙ Exercice 20kg 3x10</code></p>
+    <div style="background:var(--bg2);border-radius:var(--rs);padding:11px 13px;margin-bottom:12px">
+      <div style="font-weight:700;font-size:13px;margin-bottom:6px">📂 Fichier JSON</div>
+      <p style="font-size:11px;color:var(--t2);margin-bottom:8px">Importe directement un fichier d'export Fit-Pro (.json)</p>
+      <label class="btn bp bfull" style="display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer">
+        <span>Choisir un fichier</span>
+        <input type="file" accept=".json,application/json" style="display:none" onchange="doJSONImport(this)">
+      </label>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><div style="flex:1;height:1px;background:var(--bd)"></div><span style="font-size:11px;color:var(--t3)">ou</span><div style="flex:1;height:1px;background:var(--bd)"></div></div>
+    <div style="font-weight:700;font-size:13px;margin-bottom:6px">📋 Format texte</div>
+    <p style="font-size:12px;color:var(--t2);margin-bottom:8px">Format : <code style="background:var(--bg2);padding:2px 5px;border-radius:4px;font-size:11px">Séance 1 upper: 01/10/2025</code> puis <code style="background:var(--bg2);padding:2px 5px;border-radius:4px;font-size:11px">∙ Exercice 20kg 3x10</code></p>
     <label class="lbl">Colle tes séances</label>
-    <textarea class="inp" id="itxt" rows="9" style="resize:vertical;font-size:11px;font-family:monospace" placeholder="Séance 1 upper: 01/10/2025&#10;∙ Tractions lestées 10kg 3x6&#10;∙ Pec fly 60kg 3x9&#10;&#10;Séance 2 lower: 03/10/2025&#10;..."></textarea>
-    <button class="btn bp bfull" style="margin-top:10px" onclick="doImport()">Importer →</button>`);
+    <textarea class="inp" id="itxt" rows="7" style="resize:vertical;font-size:11px;font-family:monospace" placeholder="Séance 1 upper: 01/10/2025&#10;∙ Tractions lestées 10kg 3x6&#10;∙ Pec fly 60kg 3x9&#10;&#10;Séance 2 lower: 03/10/2025&#10;..."></textarea>
+    <button class="btn bg bfull" style="margin-top:10px" onclick="doImport()">Importer texte →</button>`);
 }
+function doJSONImport(input){const file=input.files[0];if(!file)return;const rd=new FileReader();rd.onload=e=>{try{const d=JSON.parse(e.target.result);const newSess=Array.isArray(d)?d:(Array.isArray(d.sessions)?d.sessions:null);if(!newSess||!newSess.length){toast('Fichier invalide ou vide');return;}const existing=DB.sessions();const existIds=new Set(existing.map(s=>s.id));const toAdd=newSess.filter(s=>!existIds.has(s.id));const merged=[...toAdd,...existing].sort((a,b)=>b.date-a.date);DB.saveSessions(merged);closeM();toast(toAdd.length+' séance(s) importée(s) !');render();}catch{toast('Erreur de lecture du fichier JSON');}};rd.readAsText(file);}
 function doImport(){const txt=document.getElementById('itxt')?.value||'';if(!txt.trim()){toast('Colle du texte d\'abord');return;}const p=parseText(txt);if(!p.length){toast('Format non reconnu. Vérifie le texte.');return;}const merged=[...p,...DB.sessions()].sort((a,b)=>b.date-a.date);DB.saveSessions(merged);closeM();toast(p.length+' séance(s) importée(s) !');render();}
 
 // ══════════════════════════════════════════
